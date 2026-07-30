@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { applyInkmask, DEFAULTS } from "../src/index.js";
+import {
+  applyInkmask,
+  asciiGrid,
+  computeGate,
+  DEFAULTS,
+  EFFECT_DEFAULTS,
+} from "../src/index.js";
 import type { MaskOptions, Pixels } from "../src/types.js";
 
 /** Build a per-pixel RGBA buffer. */
@@ -244,17 +250,196 @@ describe("applyInkmask", () => {
     expect(arraysEqual(partial.pixels.data, explicit.pixels.data)).toBe(true);
   });
 
-  it('unimplemented effect "halftone" throws mentioning the name', () => {
-    const src = solid(4, 4, 128, 128, 128);
-    expect(() =>
-      applyInkmask(src, { effect: { kind: "halftone" } }),
-    ).toThrow(/halftone/);
+  /**
+   * Correctness requirement 4 — the ASCII mask resolves to the character cell.
+   *
+   * Coverage is averaged and thresholded once per cell, so every pixel inside
+   * a cell shares one gate value. A per-pixel gate would half-mask glyphs at
+   * cell boundaries. Dimensions 30×29 are deliberately not a multiple of the
+   * 8×12 cell so partial edge cells are included.
+   */
+  it("Correctness requirement 4: ASCII mask resolves to the character cell", () => {
+    const cellWidth = 8;
+    const cellHeight = 12;
+    const w = 30;
+    const h = 29;
+    const src = pixels(w, h, (x, y) => {
+      const v = ((x * 13 + y * 29) * 5) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256];
+    });
+
+    const { gate } = computeGate(src, {
+      effect: { kind: "ascii", cellWidth, cellHeight },
+    });
+
+    const cols = Math.ceil(w / cellWidth);
+    const rows = Math.ceil(h / cellHeight);
+
+    // Every pixel within each cell shares one gate value.
+    for (let cy = 0; cy < rows; cy++) {
+      const y0 = cy * cellHeight;
+      const y1 = Math.min(y0 + cellHeight, h);
+      for (let cx = 0; cx < cols; cx++) {
+        const x0 = cx * cellWidth;
+        const x1 = Math.min(x0 + cellWidth, w);
+        const cellGate = gate[y0 * w + x0]!;
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            expect(gate[y * w + x]).toBe(cellGate);
+          }
+        }
+      }
+    }
+
+    // Cell grid implied by the gate matches asciiGrid geometry for same input.
+    const grid = asciiGrid(src, {
+      kind: "ascii",
+      cellWidth,
+      cellHeight,
+      ramp: EFFECT_DEFAULTS.ascii.ramp,
+      font: EFFECT_DEFAULTS.ascii.font,
+      color: EFFECT_DEFAULTS.ascii.color,
+    });
+    expect(cols).toBe(grid.cols);
+    expect(rows).toBe(grid.rows);
   });
 
-  it('unimplemented effect "ascii" throws mentioning the name', () => {
-    const src = solid(4, 4, 128, 128, 128);
-    expect(() =>
-      applyInkmask(src, { effect: { kind: "ascii" } }),
-    ).toThrow(/ascii/);
+  /**
+   * The ASCII gate genuinely differs from the per-pixel gate on structured
+   * imagery — otherwise requirement 4 could pass with a per-pixel threshold.
+   */
+  it("ASCII gate differs from per-pixel (dither) gate on the same image", () => {
+    const w = 30;
+    const h = 29;
+    const src = pixels(w, h, (x, y) => {
+      const v = ((x * 13 + y * 29) * 5) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256];
+    });
+    const mask: Partial<MaskOptions> = {
+      source: "luminance",
+      low: 0,
+      high: 0.5,
+      softness: 0.15,
+      invert: false,
+      dither: "bayer8",
+    };
+
+    const ascii = computeGate(src, {
+      mask,
+      effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+    });
+    const dither = computeGate(src, {
+      mask,
+      effect: { kind: "dither" },
+    });
+
+    expect(arraysEqual(ascii.gate, dither.gate)).toBe(false);
+  });
+
+  it("halftone runs end to end; gate 0 pixels match source", () => {
+    const src = pixels(24, 24, (x, y) => {
+      const v = ((x * 11 + y * 19) * 3) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256, 200 + (x % 56)];
+    });
+
+    const { pixels: out, gate } = applyInkmask(src, {
+      mask: {
+        source: "luminance",
+        low: 0,
+        high: 0.35,
+        softness: 0.1,
+        invert: false,
+        dither: "bayer8",
+      },
+      effect: { kind: "halftone" },
+      foreground: "#ff0000",
+      background: "#00ff00",
+    });
+
+    expect(out.width).toBe(src.width);
+    expect(out.height).toBe(src.height);
+    expect(out.data.length).toBe(src.data.length);
+
+    let gatedOff = 0;
+    for (let i = 0; i < gate.length; i++) {
+      if (gate[i] !== 0) continue;
+      gatedOff++;
+      const o = i * 4;
+      expect(out.data[o]).toBe(src.data[o]);
+      expect(out.data[o + 1]).toBe(src.data[o + 1]);
+      expect(out.data[o + 2]).toBe(src.data[o + 2]);
+      expect(out.data[o + 3]).toBe(src.data[o + 3]);
+    }
+    expect(gatedOff).toBeGreaterThan(0);
+  });
+
+  it("per-kind defaults merge: partial ascii keeps default cellHeight", () => {
+    // 30×29 with cellWidth 6 and default cellHeight 12 → cols=5, rows=3
+    // (Math.ceil(30/6)=5, Math.ceil(29/12)=3). Full default cellWidth 8
+    // would give cols=4, so a wrong merge is detectable via geometry.
+    const w = 30;
+    const h = 29;
+    const src = pixels(w, h, (x, y) => {
+      const v = ((x * 13 + y * 29) * 5) % 256;
+      return [v, v, v];
+    });
+
+    const { gate } = computeGate(src, {
+      effect: { kind: "ascii", cellWidth: 6 },
+    });
+
+    const cellWidth = 6;
+    const cellHeight = EFFECT_DEFAULTS.ascii.cellHeight; // 12
+    expect(cellHeight).toBe(12);
+    const cols = Math.ceil(w / cellWidth);
+    const rows = Math.ceil(h / cellHeight);
+    expect(cols).toBe(5);
+    expect(rows).toBe(3);
+
+    // Gate is constant per cell at the resolved geometry.
+    for (let cy = 0; cy < rows; cy++) {
+      const y0 = cy * cellHeight;
+      const y1 = Math.min(y0 + cellHeight, h);
+      for (let cx = 0; cx < cols; cx++) {
+        const x0 = cx * cellWidth;
+        const x1 = Math.min(x0 + cellWidth, w);
+        const cellGate = gate[y0 * w + x0]!;
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            expect(gate[y * w + x]).toBe(cellGate);
+          }
+        }
+      }
+    }
+  });
+
+  /**
+   * Correctness requirement 1 across all effects — coverage never depends on
+   * the effect. At identical mask settings, computeGate coverage is
+   * byte-identical for dither, halftone, and ASCII.
+   */
+  it("Correctness requirement 1 across effects: coverage is effect-independent", () => {
+    const src = pixels(32, 32, (x, y) => {
+      const v = ((x * 13 + y * 29) * 5) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256];
+    });
+    const mask: Partial<MaskOptions> = {
+      source: "luminance",
+      low: 0,
+      high: 0.5,
+      softness: 0.15,
+      invert: false,
+      dither: "bayer8",
+    };
+
+    const dither = computeGate(src, { mask, effect: { kind: "dither" } });
+    const halftone = computeGate(src, { mask, effect: { kind: "halftone" } });
+    const ascii = computeGate(src, {
+      mask,
+      effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+    });
+
+    expect(arraysEqual(dither.coverage, halftone.coverage)).toBe(true);
+    expect(arraysEqual(dither.coverage, ascii.coverage)).toBe(true);
   });
 });

@@ -4,10 +4,10 @@
 
 - **Phase 1** scaffold — package skeleton, type contract (`src/types.ts`), toolchain verified.
 - **Phase 2** core engine — `color`, `matrix` + generated blue noise, `composite`, `mask`, `dither`, `index`. 59 tests passing.
+- **Phase 3** effects and React — `halftone`, `ascii`, `react`, and the dispatch wiring. 78 tests passing.
 
 ## Next
 
-- **Phase 3** — halftone, ASCII, React wrapper, then wire the new effects into `applyInkmask`'s dispatch.
 - **Phase 4** — build config, registry JSON, example page, README, fixtures.
 
 ## Decisions and why
@@ -30,4 +30,4 @@
 
 - The blue-noise 1024-point margin is thin (1.580 vs a 1.5 floor). The kernel was narrowed to `exp(-r²/σ²)` in response to that check failing at 1.45, so it was tuned against the metric being measured. Real acceptance is visual — judge it on the Phase 4 fixtures.
 - `sobelMagnitude` in `src/mask.ts` allocates a closure per pixel for its clamped sampler. Possibly irrelevant, possibly seconds on a 4 MP photo. Measure during Phase 4 fixture rendering before optimizing.
-- `resolveEffect` in `src/index.ts` returns halftone/ascii input uncast and undefaulted, relying on the dispatch throwing. Phase 3 must give those two kinds real default merging.
+- ASCII's effect layer needs canvas glyph rasterization, so `applyInkmask` with `kind: "ascii"` requires a DOM. `computeGate` was split out as a pure export precisely so requirement 4 stays testable in Node — and it is independently useful for callers who want the mask without rendering.

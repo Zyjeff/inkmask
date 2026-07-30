@@ -1,15 +1,23 @@
 import type {
+  AsciiEffect,
   BlendMode,
   DitherEffect,
   EffectInput,
   EffectOptions,
+  HalftoneEffect,
   InkmaskOptions,
   InkmaskResult,
   MaskOptions,
   Pixels,
 } from "./types.js";
-import { computeCoverage, thresholdCoverage } from "./mask.js";
+import {
+  computeCoverage,
+  thresholdCoverage,
+  thresholdCoverageByCell,
+} from "./mask.js";
 import { ditherEffect } from "./dither.js";
+import { halftoneEffect } from "./halftone.js";
+import { asciiEffect } from "./ascii.js";
 import { composite } from "./composite.js";
 import { parseHex } from "./color.js";
 
@@ -21,6 +29,9 @@ export {
   thresholdCoverageByCell,
 } from "./mask.js";
 export { ditherEffect } from "./dither.js";
+export { halftoneEffect } from "./halftone.js";
+export { asciiEffect, asciiGrid } from "./ascii.js";
+export type { AsciiGrid } from "./ascii.js";
 export { blendRGB, composite } from "./composite.js";
 export { relativeLuminance, saturation, srgbToLinear, parseHex } from "./color.js";
 
@@ -54,6 +65,36 @@ export const DEFAULTS: {
   background: "#ffffff",
 };
 
+/** Per-kind effect defaults. DEFAULTS.effect remains the dither default. */
+export const EFFECT_DEFAULTS: {
+  dither: DitherEffect;
+  halftone: HalftoneEffect;
+  ascii: AsciiEffect;
+} = {
+  dither: {
+    kind: "dither",
+    matrix: "bayer4",
+    levels: 2,
+    scale: 1,
+    color: "mono",
+  },
+  halftone: {
+    kind: "halftone",
+    cell: 6,
+    angle: 45,
+    shape: "circle",
+    color: "mono",
+  },
+  ascii: {
+    kind: "ascii",
+    cellWidth: 8,
+    cellHeight: 12,
+    ramp: "@%#*+=-:. ",
+    font: "12px monospace",
+    color: "mono",
+  },
+};
+
 function resolveMask(partial?: Partial<MaskOptions>): MaskOptions {
   return {
     source: partial?.source ?? DEFAULTS.mask.source,
@@ -71,65 +112,102 @@ function resolveEffect(input?: EffectInput): EffectOptions {
   const kind = input?.kind ?? DEFAULTS.effect.kind;
   if (kind === "dither") {
     const p = input?.kind === "dither" ? input : undefined;
+    const d = EFFECT_DEFAULTS.dither;
     return {
       kind: "dither",
-      matrix: p?.matrix ?? DEFAULTS.effect.matrix,
-      levels: p?.levels ?? DEFAULTS.effect.levels,
-      scale: p?.scale ?? DEFAULTS.effect.scale,
-      color: p?.color ?? DEFAULTS.effect.color,
+      matrix: p?.matrix ?? d.matrix,
+      levels: p?.levels ?? d.levels,
+      scale: p?.scale ?? d.scale,
+      color: p?.color ?? d.color,
     };
   }
-  // Halftone / ascii: pass through partial fields; dispatch throws until implemented.
-  return input as EffectOptions;
+  if (kind === "halftone") {
+    const p = input?.kind === "halftone" ? input : undefined;
+    const d = EFFECT_DEFAULTS.halftone;
+    return {
+      kind: "halftone",
+      cell: p?.cell ?? d.cell,
+      angle: p?.angle ?? d.angle,
+      shape: p?.shape ?? d.shape,
+      color: p?.color ?? d.color,
+    };
+  }
+  // kind === "ascii"
+  const p = input?.kind === "ascii" ? input : undefined;
+  const d = EFFECT_DEFAULTS.ascii;
+  return {
+    kind: "ascii",
+    cellWidth: p?.cellWidth ?? d.cellWidth,
+    cellHeight: p?.cellHeight ?? d.cellHeight,
+    ramp: p?.ramp ?? d.ramp,
+    font: p?.font ?? d.font,
+    color: p?.color ?? d.color,
+  };
 }
 
-/** The whole pipeline as a pure function. No DOM. */
-export function applyInkmask(src: Pixels, options?: InkmaskOptions): InkmaskResult {
+/**
+ * Pure gate: coverage from the undithered source, then thresholded.
+ * ASCII uses cell-resolved thresholding so no character is half-masked;
+ * dither and halftone use per-pixel thresholding. Free of DOM / canvas.
+ */
+export function computeGate(
+  src: Pixels,
+  options?: InkmaskOptions,
+): { coverage: Float32Array; gate: Uint8Array } {
   const mask = resolveMask(options?.mask);
+  const effect = resolveEffect(options?.effect);
+  const coverage = computeCoverage(src, mask);
+
+  if (effect.kind === "ascii") {
+    return {
+      coverage,
+      gate: thresholdCoverageByCell(
+        coverage,
+        src.width,
+        src.height,
+        effect.cellWidth,
+        effect.cellHeight,
+        mask.dither,
+      ),
+    };
+  }
+
+  return {
+    coverage,
+    gate: thresholdCoverage(coverage, src.width, src.height, mask.dither),
+  };
+}
+
+/**
+ * The whole pipeline. Coverage/gate are pure; the effect layer for kind
+ * "ascii" requires a DOM (glyph rasterization via canvas). Dither and
+ * halftone stay pure and run in Node under the test suite.
+ */
+export function applyInkmask(src: Pixels, options?: InkmaskOptions): InkmaskResult {
   const effect = resolveEffect(options?.effect);
   const blend = options?.blend ?? DEFAULTS.blend;
   const opacity = options?.opacity ?? DEFAULTS.opacity;
   const foreground = options?.foreground ?? DEFAULTS.foreground;
   const background = options?.background ?? DEFAULTS.background;
 
-  // 1) Coverage from the UNDITHERED source — never from the effect layer.
-  const coverage = computeCoverage(src, mask);
+  const { coverage, gate } = computeGate(src, options);
 
-  // Two bindings so each dispatch switch keeps a full three-way seam; switching
-  // the same const twice lets TS narrow it to "dither" after the throw cases.
-  const effectKind: EffectOptions["kind"] = effect.kind;
-  const gateKind: EffectOptions["kind"] = effect.kind;
+  const fg = parseHex(foreground);
+  const bg = parseHex(background);
 
-  // 2) Effect layer. Halftone and ascii are seams for a later unit.
   let effectLayer: Pixels;
-  switch (effectKind) {
+  switch (effect.kind) {
     case "dither":
-      effectLayer = ditherEffect(
-        src,
-        effect as DitherEffect,
-        parseHex(foreground),
-        parseHex(background),
-      );
+      effectLayer = ditherEffect(src, effect, fg, bg);
       break;
     case "halftone":
-      throw new Error('Effect "halftone" is not implemented yet');
-    case "ascii":
-      throw new Error('Effect "ascii" is not implemented yet');
-  }
-
-  // 3) Binary gate. Dither/halftone share per-pixel thresholding; ascii will
-  //    use thresholdCoverageByCell (one-case addition) when that effect lands.
-  let gate: Uint8Array;
-  switch (gateKind) {
-    case "dither":
-    case "halftone":
-      gate = thresholdCoverage(coverage, src.width, src.height, mask.dither);
+      effectLayer = halftoneEffect(src, effect, fg, bg);
       break;
     case "ascii":
-      throw new Error('Effect "ascii" is not implemented yet');
+      effectLayer = asciiEffect(src, effect, fg, bg);
+      break;
   }
 
-  // 4) Composite effect over base, gated by the mask.
   const pixels = composite(src, effectLayer, gate, { blend, opacity });
 
   return { pixels, coverage, gate };
