@@ -21,7 +21,12 @@ const SOURCES = [
 ];
 
 const files = SOURCES.map((name) => {
-  const content = readFileSync(join(srcDir, name), "utf8");
+  // Normalize to LF so registry parity is stable across platforms
+  // (embedded JSON strings are not subject to git's line-ending rules).
+  const content = readFileSync(join(srcDir, name), "utf8").replace(
+    /\r\n/g,
+    "\n",
+  );
   return {
     path: `inkmask/${name}`,
     type: name === "react.tsx" ? "registry:ui" : "registry:lib",

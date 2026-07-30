@@ -5,6 +5,7 @@ import {
   thresholdCoverage,
   thresholdCoverageByCell,
 } from "../src/mask.js";
+import { thresholdAt } from "../src/matrix.js";
 import { relativeLuminance } from "../src/color.js";
 import type { MaskOptions, Pixels } from "../src/types.js";
 
@@ -334,6 +335,114 @@ describe("resolveMaskToCells / thresholdCoverageByCell", () => {
         for (let y = y0; y < y1; y++) {
           for (let x = x0; x < x1; x++) {
             expect(gate[y * w + x]).toBe(first);
+          }
+        }
+      }
+    }
+  });
+
+  // Uniform coverage isolates the threshold: any variation in the gate can
+  // only come from thresholdAt(matrix, cx, cy) differing per cell. Pixel-origin
+  // indexing (thresholdAt(matrix, cx*cellWidth, cy*cellHeight)) with cellWidth
+  // equal to the matrix period collapses each row to one threshold, so every
+  // cell in a row would share the same gate.
+  it("adjacent cells get distinct thresholds under uniform coverage", () => {
+    const w = 64;
+    const h = 60;
+    const cellW = 8;
+    const cellH = 12;
+    const matrix = "bayer8" as const;
+    const coverage = new Float32Array(w * h);
+    coverage.fill(0.5);
+
+    const gate = thresholdCoverageByCell(coverage, w, h, cellW, cellH, matrix);
+    const cols = Math.ceil(w / cellW);
+    const rows = Math.ceil(h / cellH);
+
+    // One gate sample per cell (top-left pixel of each cell).
+    const cellGate = (cx: number, cy: number) =>
+      gate[(cy * cellH) * w + cx * cellW]!;
+
+    let rowDiffers = false;
+    for (let cx = 1; cx < cols; cx++) {
+      if (cellGate(cx, 0) !== cellGate(cx - 1, 0)) {
+        rowDiffers = true;
+        break;
+      }
+    }
+    expect(rowDiffers).toBe(true);
+
+    let colDiffers = false;
+    for (let cy = 1; cy < rows; cy++) {
+      if (cellGate(0, cy) !== cellGate(0, cy - 1)) {
+        colDiffers = true;
+        break;
+      }
+    }
+    expect(colDiffers).toBe(true);
+
+    let zeros = 0;
+    let ones = 0;
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        if (cellGate(cx, cy) === 0) zeros++;
+        else ones++;
+      }
+    }
+    expect(zeros).toBeGreaterThan(0);
+    expect(ones).toBeGreaterThan(0);
+    const fractionOn = ones / (cols * rows);
+    // bayer8 has half its thresholds below 0.5, so ~half the cells gate on.
+    expect(fractionOn).toBeGreaterThan(0.3);
+    expect(fractionOn).toBeLessThan(0.7);
+  });
+
+  // Pins the exact cell-coordinate indexing contract: expected gate is
+  // cellValue > thresholdAt(matrix, cx, cy), not pixel-origin coordinates.
+  it("cell gate matches explicit thresholdAt(matrix, cx, cy) reference", () => {
+    const w = 64;
+    const h = 60;
+    const cellW = 8;
+    const cellH = 12;
+    const matrix = "bayer8" as const;
+    const cols = Math.ceil(w / cellW);
+    const rows = Math.ceil(h / cellH);
+
+    // Distinct coverage per cell, filled across that cell's pixels.
+    const coverage = new Float32Array(w * h);
+    const cellValues = new Float32Array(cols * rows);
+    for (let cy = 0; cy < rows; cy++) {
+      const y0 = cy * cellH;
+      const y1 = Math.min(y0 + cellH, h);
+      for (let cx = 0; cx < cols; cx++) {
+        const cellIdx = cy * cols + cx;
+        // Spread values across (0,1) so some pass and some fail each threshold.
+        const value = ((cellIdx * 17 + 3) % 97) / 97;
+        cellValues[cellIdx] = value;
+        const x0 = cx * cellW;
+        const x1 = Math.min(x0 + cellW, w);
+        for (let y = y0; y < y1; y++) {
+          const row = y * w;
+          for (let x = x0; x < x1; x++) {
+            coverage[row + x] = value;
+          }
+        }
+      }
+    }
+
+    const gate = thresholdCoverageByCell(coverage, w, h, cellW, cellH, matrix);
+
+    for (let cy = 0; cy < rows; cy++) {
+      const y0 = cy * cellH;
+      const y1 = Math.min(y0 + cellH, h);
+      for (let cx = 0; cx < cols; cx++) {
+        const expected =
+          cellValues[cy * cols + cx]! > thresholdAt(matrix, cx, cy) ? 1 : 0;
+        const x0 = cx * cellW;
+        const x1 = Math.min(x0 + cellW, w);
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            expect(gate[y * w + x]).toBe(expected);
           }
         }
       }

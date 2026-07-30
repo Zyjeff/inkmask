@@ -113,8 +113,10 @@ describe("package artifact", { timeout: 120_000 }, () => {
       // path is like "inkmask/types.ts" -> src/types.ts
       const name = entry.path.replace(/^inkmask\//, "");
       const srcPath = join(root, "src", name);
-      const disk = readFileSync(srcPath, "utf8");
-      expect(entry.content, `registry content drift for ${name}`).toBe(disk);
+      // Compare LF-normalized so line endings alone cannot fail parity.
+      const disk = readFileSync(srcPath, "utf8").replace(/\r\n/g, "\n");
+      const registryContent = entry.content.replace(/\r\n/g, "\n");
+      expect(registryContent, `registry content drift for ${name}`).toBe(disk);
     }
   });
 

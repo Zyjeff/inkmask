@@ -141,6 +141,8 @@ npx shadcn@latest add <url>
 
 Point `<url>` at a published copy of this repo's `registry.json`. That installs the library files as project source, not a second implementation.
 
+The vendored source uses explicit `./types.js`-style import specifiers (required so the published ESM resolves in a browser without a bundler). TypeScript with `moduleResolution: "Bundler"` and Next.js resolve those to the `.ts` files, but a default Vite setup may not — such consumers should install the package instead, or add a resolver alias.
+
 ## Browser only
 
 There is no Node canvas backend. Browser (or any environment with DOM canvas) is required for `render`, `toPixels`, `toPNGBlob`, and for `applyInkmask` when the effect is ASCII. Still images only are supported in v1.
