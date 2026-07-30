@@ -53,11 +53,26 @@ All options are optional. Unset fields take the defaults below.
 | --- | --- | --- | --- |
 | `source` | `"luminance" \| "saturation" \| "gradient" \| "external"` | `"luminance"` | Property of the source used to build coverage. |
 | `low` | `number` | `0` | Lower edge of the accepted band, 0–1, in the mask source's own units. |
-| `high` | `number` | `0.5` | Upper edge of the accepted band, 0–1. |
-| `softness` | `number` | `0.15` | Width of the linear ramp at each band edge, 0–1, in value units (not pixels). |
+| `high` | `number` | `0.15` | Upper edge of the accepted band, 0–1. |
+| `softness` | `number` | `0.06` | Width of the linear ramp at each band edge, 0–1, in value units (not pixels). |
 | `invert` | `boolean` | `false` | Invert coverage after the band map. |
 | `dither` | `"bayer2" \| "bayer4" \| "bayer8" \| "blueNoise"` | `"bayer8"` | Ordered matrix used to threshold coverage into the binary gate. Independent of the effect matrix. |
 | `external` | `Pixels` | — | Required when `source` is `"external"`. Its luminance becomes the coverage field. |
+
+#### Thresholds are in linear-light units
+
+Mask band edges are compared against linear-light values, not 0–255 sRGB intuition:
+
+| sRGB 0-255 | linear |
+| --- | --- |
+| 0 | 0.000 |
+| 64 | 0.051 |
+| 128 | 0.216 |
+| 192 | 0.528 |
+| 224 | 0.745 |
+| 255 | 1.000 |
+
+Most photographs concentrate below linear 0.35, so useful bands are typically narrow and low — a `high` around 0.1 to 0.2 is a normal starting point.
 
 ### Effect (`options.effect`)
 

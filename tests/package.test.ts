@@ -18,8 +18,15 @@ describe("package artifact", { timeout: 120_000 }, () => {
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
     });
-    const packed = JSON.parse(out) as Array<{ files: Array<{ path: string }> }>;
-    const paths = packed[0].files.map((f) => f.path);
+    interface NpmPackResult {
+      files: Array<{ path: string }>;
+    }
+    const packed = JSON.parse(out) as NpmPackResult[];
+    const entry = packed[0];
+    if (entry === undefined) {
+      throw new Error("npm pack --dry-run --json returned no entries");
+    }
+    const paths = entry.files.map((f) => f.path);
 
     const allowedRoots = new Set([
       "package.json",
@@ -120,7 +127,7 @@ describe("package artifact", { timeout: 120_000 }, () => {
     );
 
     const srcFiles = readdirSync(join(root, "src")).filter(
-      (f) => f.endsWith(".ts") || f.endsWith(".tsx"),
+      (f: string) => f.endsWith(".ts") || f.endsWith(".tsx"),
     );
     for (const name of srcFiles) {
       expect(

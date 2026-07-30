@@ -44,11 +44,13 @@ export const DEFAULTS: {
   foreground: string;
   background: string;
 } = {
+  // Thresholds are linear-light luminance. sRGB mid-gray (128) is linear
+  // ~0.216, not 0.5; a band reaching high: 0.5 would gate the whole frame.
   mask: {
     source: "luminance",
     low: 0,
-    high: 0.5,
-    softness: 0.15,
+    high: 0.15,
+    softness: 0.06,
     invert: false,
     dither: "bayer8",
   },
