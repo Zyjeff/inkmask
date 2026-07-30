@@ -1,0 +1,31 @@
+{
+  "name": "inkmask",
+  "version": "0.1.0",
+  "description": "Apply dither, halftone, or ASCII to part of an image using a mask derived from the image itself.",
+  "type": "module",
+  "sideEffects": false,
+  "license": "MIT",
+  "files": ["dist"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./react": { "types": "./dist/react.d.ts", "import": "./dist/react.js" },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": { "react": ">=18" },
+  "peerDependenciesMeta": { "react": { "optional": true } },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "keywords": ["dither", "halftone", "ascii", "bayer", "blue-noise", "mask", "canvas", "image"],
+  "engines": { "node": ">=18" }
+}
