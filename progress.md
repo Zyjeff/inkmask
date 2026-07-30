@@ -33,7 +33,20 @@
 - **Blue noise held up visually.** The thin 1024-point margin (1.580 vs 1.5) did not translate into a visible defect; `gradient-dither.png` shows a clean dot dissolve with no clumping.
 - **`tsc` was never run after `tests/package.test.ts` landed** — 6 type errors sat in the tree while the suite stayed green, because vitest transpiles without typechecking. Fixed by adding `@types/node`. Any spec that adds a file must list `tsc` in its verification commands.
 
+## Found by code review, after the suite was already green
+
+Two tests were passing for the wrong reason. Neither was visible from test names or pass counts.
+
+- **Requirement 4's tests were vacuous.** `thresholdCoverageByCell` could have regressed to pixel-origin indexing and every test still passed — cell-constancy and gate-difference both survive that bug, and with `cellWidth: 8` on an 8x8 matrix it collapses each row to a single threshold. Two tests now pin the contract, verified by injecting the bug and confirming exactly those two fail.
+- **The registry parity test was platform-dependent.** `registry.json` embedded literal `\r\n` escapes for one entry because a stray `git checkout` left `src/index.ts` CRLF. Those escapes sit inside JSON strings, where git's line-ending normalization cannot reach — so the test would have failed on any LF checkout while passing locally. Fixed at three layers: `.gitattributes` pins `eol=lf`, the generator normalizes before embedding, and the test normalizes both sides.
+
+The lesson worth keeping: a green suite says nothing about whether a test would go red for the defect it names. Both of these were caught by inspecting artifacts, not reports.
+
 ## Open items
 
+- **Fixture PNGs total ~34 MB** and are already in history. Dithered output is near-incompressible, so PNG cannot help. Downscaling the renderer's output to ~1000px would cut this roughly 6x, but removing the existing blobs needs a history rewrite. Nothing has been pushed, so that is still cheap to do.
+- **`asciiEffect`'s glyph rasterization has no automated test** — it needs canvas. It is covered only by `eagle-ascii.png`, which was inspected and is correct, but there is no regression guard.
+- **The `shadcn add` path is not portable to default Vite.** Vendored source carries `./types.js` specifiers, required for the published ESM to resolve in a browser. Next.js and `moduleResolution: "Bundler"` handle it; default Vite does not. Documented in the README.
+- `dither.ts` accepts `levels: 1` and `scale: 0` without validation, producing NaN. Invalid input, no guard. Noted, not fixed.
 - `fixtures/contrast-dither.png` demonstrates little. A uniformly dark disc on a uniformly light field has no intermediate tones, so the value-domain ramp has nothing to act on and the edge clips hard. This is correct behavior, not a defect — the dot dissolve comes from the image's own tonal gradient — but the fixture is a weak illustration. `gradient-dither.png` and `eagle-ascii.png` are where the falloff is actually visible.
 - ASCII's effect layer needs canvas glyph rasterization, so `applyInkmask` with `kind: "ascii"` requires a DOM. `computeGate` was split out as a pure export precisely so requirement 4 stays testable in Node — and it is independently useful for callers who want the mask without rendering.
