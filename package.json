@@ -16,12 +16,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "registry": "node scripts/build-registry.mjs",
+    "fixtures": "node scripts/render-fixtures.mjs",
+    "example": "node scripts/serve.mjs",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": { "react": ">=18" },
   "peerDependenciesMeta": { "react": { "optional": true } },
   "devDependencies": {
     "@types/react": "^19.0.0",
+    "playwright-core": "^1.49.0",
     "react": "^19.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

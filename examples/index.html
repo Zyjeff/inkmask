@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>inkmask — example</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --panel: #111111;
+      --border: #222222;
+      --text: #e8e8e8;
+      --muted: #888888;
+      --accent: #00e5ff;
+      --input: #1a1a1a;
+      --font: ui-sans-serif, "Inter", "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+      --panel-w: 300px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    body {
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Fixed side panel */
+    #panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--panel-w);
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 16px 14px 32px;
+      z-index: 10;
+    }
+
+    #panel h1 {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    #panel .sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 18px;
+      font-family: var(--mono);
+    }
+
+    section {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-of-type { border-bottom: none; }
+
+    .section-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .field {
+      margin-bottom: 10px;
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .field label .val {
+      font-family: var(--mono);
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    select,
+    input[type="text"],
+    input[type="number"],
+    input[type="file"] {
+      width: 100%;
+      background: var(--input);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 6px 8px;
+      outline: none;
+      border-radius: 0;
+    }
+
+    select:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="range"]:focus {
+      border-color: var(--accent);
+      outline: 1px solid var(--accent);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      height: 4px;
+      background: var(--border);
+      appearance: none;
+      border-radius: 0;
+      border: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 28px;
+      padding: 2px;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    input[type="color"]:focus {
+      border-color: var(--accent);
+      outline: 1px solid var(--accent);
+    }
+
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .check-row label {
+      margin: 0;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .effect-params { display: none; }
+    .effect-params.active { display: block; }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px 12px;
+      font-family: var(--font);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: var(--text);
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    button:hover { border-color: var(--muted); }
+    button:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+    #download-png {
+      background: var(--accent);
+      color: #0a0a0a;
+      border-color: var(--accent);
+    }
+
+    #download-png:hover {
+      filter: brightness(1.1);
+    }
+
+    #readout {
+      margin-top: 12px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    #readout span { color: var(--text); }
+
+    /* Main stage */
+    #stage {
+      margin-left: var(--panel-w);
+      flex: 1;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: auto;
+      background: var(--bg);
+    }
+
+    #output {
+      max-width: 100%;
+      max-height: calc(100vh - 48px);
+      display: block;
+      image-rendering: auto;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+  <aside id="panel">
+    <h1>inkmask</h1>
+    <p class="sub">pipeline harness</p>
+
+    <section>
+      <span class="section-label">Source</span>
+      <div class="field">
+        <label for="source-image">Image</label>
+        <select id="source-image">
+          <option value="gradient">Linear gradient</option>
+          <option value="disc">High-contrast disc</option>
+          <option value="blob">Soft radial blob</option>
+          <option value="file">Custom file…</option>
+        </select>
+      </div>
+      <div class="field" id="file-field" style="display:none">
+        <label for="file-input">File</label>
+        <input type="file" id="file-input" accept="image/*" />
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Mask</span>
+      <div class="field">
+        <label for="mask-source">Source</label>
+        <select id="mask-source">
+          <option value="luminance">luminance</option>
+          <option value="saturation">saturation</option>
+          <option value="gradient">gradient</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="mask-low">Low <span class="val" id="mask-low-val"></span></label>
+        <input type="range" id="mask-low" min="0" max="1" step="0.01" />
+      </div>
+      <div class="field">
+        <label for="mask-high">High <span class="val" id="mask-high-val"></span></label>
+        <input type="range" id="mask-high" min="0" max="1" step="0.01" />
+      </div>
+      <div class="field">
+        <label for="mask-softness">Softness <span class="val" id="mask-softness-val"></span></label>
+        <input type="range" id="mask-softness" min="0" max="1" step="0.01" />
+      </div>
+      <div class="field">
+        <div class="check-row">
+          <input type="checkbox" id="mask-invert" />
+          <label for="mask-invert">Invert</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="mask-dither">Dither</label>
+        <select id="mask-dither">
+          <option value="bayer2">bayer2</option>
+          <option value="bayer4">bayer4</option>
+          <option value="bayer8">bayer8</option>
+          <option value="blueNoise">blueNoise</option>
+        </select>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Effect</span>
+      <div class="field">
+        <label for="effect-kind">Kind</label>
+        <select id="effect-kind">
+          <option value="dither">dither</option>
+          <option value="halftone">halftone</option>
+          <option value="ascii">ascii</option>
+        </select>
+      </div>
+
+      <div id="params-dither" class="effect-params">
+        <div class="field">
+          <label for="effect-matrix">Matrix</label>
+          <select id="effect-matrix">
+            <option value="bayer2">bayer2</option>
+            <option value="bayer4">bayer4</option>
+            <option value="bayer8">bayer8</option>
+            <option value="blueNoise">blueNoise</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="effect-levels">Levels <span class="val" id="effect-levels-val"></span></label>
+          <input type="range" id="effect-levels" min="2" max="8" step="1" />
+        </div>
+        <div class="field">
+          <label for="effect-scale">Scale <span class="val" id="effect-scale-val"></span></label>
+          <input type="range" id="effect-scale" min="1" max="8" step="1" />
+        </div>
+      </div>
+
+      <div id="params-halftone" class="effect-params">
+        <div class="field">
+          <label for="effect-cell">Cell <span class="val" id="effect-cell-val"></span></label>
+          <input type="range" id="effect-cell" min="2" max="24" step="1" />
+        </div>
+        <div class="field">
+          <label for="effect-angle">Angle <span class="val" id="effect-angle-val"></span></label>
+          <input type="range" id="effect-angle" min="0" max="90" step="1" />
+        </div>
+        <div class="field">
+          <label for="effect-shape">Shape</label>
+          <select id="effect-shape">
+            <option value="circle">circle</option>
+            <option value="square">square</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="params-ascii" class="effect-params">
+        <div class="field">
+          <label for="effect-cellWidth">Cell width <span class="val" id="effect-cellWidth-val"></span></label>
+          <input type="range" id="effect-cellWidth" min="4" max="24" step="1" />
+        </div>
+        <div class="field">
+          <label for="effect-cellHeight">Cell height <span class="val" id="effect-cellHeight-val"></span></label>
+          <input type="range" id="effect-cellHeight" min="4" max="32" step="1" />
+        </div>
+        <div class="field">
+          <label for="effect-ramp">Ramp</label>
+          <input type="text" id="effect-ramp" spellcheck="false" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="effect-color">Color</label>
+        <select id="effect-color">
+          <option value="mono">mono</option>
+          <option value="source">source</option>
+        </select>
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Composite</span>
+      <div class="field">
+        <label for="blend">Blend</label>
+        <select id="blend">
+          <option value="normal">normal</option>
+          <option value="multiply">multiply</option>
+          <option value="screen">screen</option>
+          <option value="overlay">overlay</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="opacity">Opacity <span class="val" id="opacity-val"></span></label>
+        <input type="range" id="opacity" min="0" max="1" step="0.01" />
+      </div>
+    </section>
+
+    <section>
+      <span class="section-label">Colors</span>
+      <div class="field">
+        <label for="foreground">Foreground</label>
+        <input type="color" id="foreground" />
+      </div>
+      <div class="field">
+        <label for="background">Background</label>
+        <input type="color" id="background" />
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" id="download-png">Download PNG</button>
+      <button type="button" id="reset">Reset</button>
+    </div>
+
+    <div id="readout">
+      <div>time <span id="render-ms">—</span> ms</div>
+      <div>size <span id="render-size">—</span></div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <canvas id="output" width="512" height="512"></canvas>
+  </main>
+
+  <script type="module">
+    import { render, applyInkmask, DEFAULTS, EFFECT_DEFAULTS } from "../dist/index.js";
+
+    // ── Pattern generators ──────────────────────────────────────────────
+    const PATTERN_SIZE = 512;
+
+    function makeGradient() {
+      const c = document.createElement("canvas");
+      c.width = PATTERN_SIZE;
+      c.height = PATTERN_SIZE;
+      const ctx = c.getContext("2d");
+      const g = ctx.createLinearGradient(0, 0, PATTERN_SIZE, PATTERN_SIZE);
+      g.addColorStop(0, "#000000");
+      g.addColorStop(0.5, "#808080");
+      g.addColorStop(1, "#ffffff");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, PATTERN_SIZE, PATTERN_SIZE);
+      return c;
+    }
+
+    function makeDisc() {
+      const c = document.createElement("canvas");
+      c.width = PATTERN_SIZE;
+      c.height = PATTERN_SIZE;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, PATTERN_SIZE, PATTERN_SIZE);
+      ctx.fillStyle = "#f0f0f0";
+      ctx.beginPath();
+      ctx.arc(PATTERN_SIZE / 2, PATTERN_SIZE / 2, PATTERN_SIZE * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      return c;
+    }
+
+    function makeBlob() {
+      const c = document.createElement("canvas");
+      c.width = PATTERN_SIZE;
+      c.height = PATTERN_SIZE;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#0d0d0d";
+      ctx.fillRect(0, 0, PATTERN_SIZE, PATTERN_SIZE);
+      const g = ctx.createRadialGradient(
+        PATTERN_SIZE * 0.45, PATTERN_SIZE * 0.4, 0,
+        PATTERN_SIZE * 0.5, PATTERN_SIZE * 0.5, PATTERN_SIZE * 0.45
+      );
+      g.addColorStop(0, "#e8e8e8");
+      g.addColorStop(0.4, "#707070");
+      g.addColorStop(1, "#0d0d0d");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, PATTERN_SIZE, PATTERN_SIZE);
+      return c;
+    }
+
+    const patterns = {
+      gradient: makeGradient(),
+      disc: makeDisc(),
+      blob: makeBlob(),
+    };
+
+    /** @type {HTMLCanvasElement | HTMLImageElement} */
+    let currentSource = patterns.gradient;
+
+    // ── DOM refs ────────────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id);
+
+    const el = {
+      sourceImage: $("source-image"),
+      fileInput: $("file-input"),
+      fileField: $("file-field"),
+      maskSource: $("mask-source"),
+      maskLow: $("mask-low"),
+      maskHigh: $("mask-high"),
+      maskSoftness: $("mask-softness"),
+      maskInvert: $("mask-invert"),
+      maskDither: $("mask-dither"),
+      effectKind: $("effect-kind"),
+      effectMatrix: $("effect-matrix"),
+      effectLevels: $("effect-levels"),
+      effectScale: $("effect-scale"),
+      effectColor: $("effect-color"),
+      effectCell: $("effect-cell"),
+      effectAngle: $("effect-angle"),
+      effectShape: $("effect-shape"),
+      effectCellWidth: $("effect-cellWidth"),
+      effectCellHeight: $("effect-cellHeight"),
+      effectRamp: $("effect-ramp"),
+      blend: $("blend"),
+      opacity: $("opacity"),
+      foreground: $("foreground"),
+      background: $("background"),
+      downloadPng: $("download-png"),
+      reset: $("reset"),
+      output: $("output"),
+      renderMs: $("render-ms"),
+      renderSize: $("render-size"),
+      paramsDither: $("params-dither"),
+      paramsHalftone: $("params-halftone"),
+      paramsAscii: $("params-ascii"),
+    };
+
+    // ── Init from DEFAULTS / EFFECT_DEFAULTS ────────────────────────────
+    function setSelect(select, value) {
+      select.value = value;
+    }
+
+    function applyDefaultsToControls() {
+      const m = DEFAULTS.mask;
+      const d = EFFECT_DEFAULTS.dither;
+      const h = EFFECT_DEFAULTS.halftone;
+      const a = EFFECT_DEFAULTS.ascii;
+
+      setSelect(el.maskSource, m.source);
+      el.maskLow.value = m.low;
+      el.maskHigh.value = m.high;
+      el.maskSoftness.value = m.softness;
+      el.maskInvert.checked = m.invert;
+      setSelect(el.maskDither, m.dither);
+
+      setSelect(el.effectKind, DEFAULTS.effect.kind);
+
+      setSelect(el.effectMatrix, d.matrix);
+      el.effectLevels.value = d.levels;
+      el.effectScale.value = d.scale;
+
+      el.effectCell.value = h.cell;
+      el.effectAngle.value = h.angle;
+      setSelect(el.effectShape, h.shape);
+
+      el.effectCellWidth.value = a.cellWidth;
+      el.effectCellHeight.value = a.cellHeight;
+      el.effectRamp.value = a.ramp;
+
+      // color is shared; seed from the active kind's default
+      const kind = DEFAULTS.effect.kind;
+      const colorDefault =
+        kind === "halftone" ? h.color : kind === "ascii" ? a.color : d.color;
+      setSelect(el.effectColor, colorDefault);
+
+      setSelect(el.blend, DEFAULTS.blend);
+      el.opacity.value = DEFAULTS.opacity;
+      el.foreground.value = DEFAULTS.foreground;
+      el.background.value = DEFAULTS.background;
+
+      updateValReadouts();
+      showActiveEffectParams();
+    }
+
+    function updateValReadouts() {
+      $("mask-low-val").textContent = Number(el.maskLow.value).toFixed(2);
+      $("mask-high-val").textContent = Number(el.maskHigh.value).toFixed(2);
+      $("mask-softness-val").textContent = Number(el.maskSoftness.value).toFixed(2);
+      $("effect-levels-val").textContent = el.effectLevels.value;
+      $("effect-scale-val").textContent = el.effectScale.value;
+      $("effect-cell-val").textContent = el.effectCell.value;
+      $("effect-angle-val").textContent = el.effectAngle.value;
+      $("effect-cellWidth-val").textContent = el.effectCellWidth.value;
+      $("effect-cellHeight-val").textContent = el.effectCellHeight.value;
+      $("opacity-val").textContent = Number(el.opacity.value).toFixed(2);
+    }
+
+    function showActiveEffectParams() {
+      const kind = el.effectKind.value;
+      el.paramsDither.classList.toggle("active", kind === "dither");
+      el.paramsHalftone.classList.toggle("active", kind === "halftone");
+      el.paramsAscii.classList.toggle("active", kind === "ascii");
+    }
+
+    // ── Options from controls ───────────────────────────────────────────
+    function collectOptions() {
+      const kind = el.effectKind.value;
+      const color = el.effectColor.value;
+      let effect;
+
+      if (kind === "dither") {
+        effect = {
+          kind: "dither",
+          matrix: el.effectMatrix.value,
+          levels: Number(el.effectLevels.value),
+          scale: Number(el.effectScale.value),
+          color,
+        };
+      } else if (kind === "halftone") {
+        effect = {
+          kind: "halftone",
+          cell: Number(el.effectCell.value),
+          angle: Number(el.effectAngle.value),
+          shape: el.effectShape.value,
+          color,
+        };
+      } else {
+        effect = {
+          kind: "ascii",
+          cellWidth: Number(el.effectCellWidth.value),
+          cellHeight: Number(el.effectCellHeight.value),
+          ramp: el.effectRamp.value,
+          color,
+        };
+      }
+
+      return {
+        mask: {
+          source: el.maskSource.value,
+          low: Number(el.maskLow.value),
+          high: Number(el.maskHigh.value),
+          softness: Number(el.maskSoftness.value),
+          invert: el.maskInvert.checked,
+          dither: el.maskDither.value,
+        },
+        effect,
+        blend: el.blend.value,
+        opacity: Number(el.opacity.value),
+        foreground: el.foreground.value,
+        background: el.background.value,
+      };
+    }
+
+    // ── Render ──────────────────────────────────────────────────────────
+    function doRender() {
+      window.__inkmaskReady = false;
+      updateValReadouts();
+
+      const options = collectOptions();
+      window.__inkmaskOptions = options;
+
+      const t0 = performance.now();
+      const result = render(currentSource, options);
+      const ms = performance.now() - t0;
+
+      const out = el.output;
+      out.width = result.width;
+      out.height = result.height;
+      const ctx = out.getContext("2d");
+      ctx.clearRect(0, 0, out.width, out.height);
+      ctx.drawImage(result, 0, 0);
+
+      el.renderMs.textContent = ms.toFixed(1);
+      el.renderSize.textContent = `${result.width}×${result.height}`;
+
+      window.__inkmaskReady = true;
+    }
+
+    // ── Source handling ─────────────────────────────────────────────────
+    function setSourceFromPattern(key) {
+      if (key === "file") {
+        el.fileField.style.display = "";
+        return;
+      }
+      el.fileField.style.display = "none";
+      currentSource = patterns[key] || patterns.gradient;
+      doRender();
+    }
+
+    el.sourceImage.addEventListener("change", () => {
+      setSourceFromPattern(el.sourceImage.value);
+    });
+
+    el.fileInput.addEventListener("change", () => {
+      const file = el.fileInput.files && el.fileInput.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        currentSource = img;
+        doRender();
+      };
+      img.src = url;
+    });
+
+    /** @param {string | HTMLImageElement | HTMLCanvasElement} dataUrlOrImage */
+    window.__inkmaskSetSource = (dataUrlOrImage) => {
+      if (typeof dataUrlOrImage === "string") {
+        const img = new Image();
+        img.onload = () => {
+          currentSource = img;
+          el.sourceImage.value = "file";
+          el.fileField.style.display = "";
+          doRender();
+        };
+        img.src = dataUrlOrImage;
+      } else {
+        currentSource = dataUrlOrImage;
+        el.sourceImage.value = "file";
+        el.fileField.style.display = "";
+        doRender();
+      }
+    };
+
+    // ── Effect kind visibility ──────────────────────────────────────────
+    el.effectKind.addEventListener("change", () => {
+      showActiveEffectParams();
+      doRender();
+    });
+
+    // ── Wire all controls ───────────────────────────────────────────────
+    const reRenderControls = [
+      el.maskSource, el.maskLow, el.maskHigh, el.maskSoftness, el.maskInvert, el.maskDither,
+      el.effectMatrix, el.effectLevels, el.effectScale, el.effectColor,
+      el.effectCell, el.effectAngle, el.effectShape,
+      el.effectCellWidth, el.effectCellHeight, el.effectRamp,
+      el.blend, el.opacity, el.foreground, el.background,
+    ];
+
+    for (const control of reRenderControls) {
+      control.addEventListener("input", doRender);
+      control.addEventListener("change", doRender);
+    }
+
+    // ── Download / Reset ────────────────────────────────────────────────
+    el.downloadPng.addEventListener("click", () => {
+      const a = document.createElement("a");
+      a.download = "inkmask.png";
+      a.href = el.output.toDataURL("image/png");
+      a.click();
+    });
+
+    el.reset.addEventListener("click", () => {
+      el.sourceImage.value = "gradient";
+      el.fileField.style.display = "none";
+      el.fileInput.value = "";
+      currentSource = patterns.gradient;
+      applyDefaultsToControls();
+      doRender();
+    });
+
+    // ── Boot ────────────────────────────────────────────────────────────
+    applyDefaultsToControls();
+    doRender();
+  </script>
+</body>
+</html>
