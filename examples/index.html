@@ -423,6 +423,12 @@
         <input type="color" id="foreground" />
       </div>
       <div class="field">
+        <div class="check-row">
+          <input type="checkbox" id="background-transparent" />
+          <label for="background-transparent">Transparent paper</label>
+        </div>
+      </div>
+      <div class="field">
         <label for="background">Background</label>
         <input type="color" id="background" />
       </div>
@@ -533,6 +539,7 @@
       opacity: $("opacity"),
       foreground: $("foreground"),
       background: $("background"),
+      backgroundTransparent: $("background-transparent"),
       downloadPng: $("download-png"),
       reset: $("reset"),
       output: $("output"),
@@ -584,7 +591,11 @@
       setSelect(el.blend, DEFAULTS.blend);
       el.opacity.value = DEFAULTS.opacity;
       el.foreground.value = DEFAULTS.foreground;
-      el.background.value = DEFAULTS.background;
+
+      const transparent = DEFAULTS.background === null;
+      el.backgroundTransparent.checked = transparent;
+      el.background.disabled = transparent;
+      el.background.value = transparent ? "#ffffff" : DEFAULTS.background;
 
       updateValReadouts();
       showActiveEffectParams();
@@ -655,7 +666,7 @@
         blend: el.blend.value,
         opacity: Number(el.opacity.value),
         foreground: el.foreground.value,
-        background: el.background.value,
+        background: el.backgroundTransparent.checked ? null : el.background.value,
       };
     }
 
@@ -749,6 +760,11 @@
       control.addEventListener("input", doRender);
       control.addEventListener("change", doRender);
     }
+
+    el.backgroundTransparent.addEventListener("change", () => {
+      el.background.disabled = el.backgroundTransparent.checked;
+      doRender();
+    });
 
     // ── Download / Reset ────────────────────────────────────────────────
     el.downloadPng.addEventListener("click", () => {

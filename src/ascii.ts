@@ -66,11 +66,17 @@ export function asciiGrid(src: Pixels, opts: AsciiEffect): AsciiGrid {
 
 // =============================================================================
 // BROWSER ONLY — requires document/canvas. Not exercised by Node tests.
-// asciiEffect is verified in the browser harness instead.
+// asciiEffect transparency (glyphs on transparent when bg is null) is verified
+// in the browser harness.
 // =============================================================================
 
-/** Browser only: rasterize a glyph grid into a Pixels buffer. */
-export function asciiEffect(src: Pixels, opts: AsciiEffect, fg: RGB, bg: RGB): Pixels {
+/**
+ * Browser only: rasterize a glyph grid into a Pixels buffer.
+ * When `bg` is null, glyphs are drawn on a transparent canvas (ink-on-transparent);
+ * returned alpha is glyph coverage. When `bg` is supplied, the canvas is filled
+ * with that color first (opaque paper), then glyphs are drawn over it.
+ */
+export function asciiEffect(src: Pixels, opts: AsciiEffect, fg: RGB, bg: RGB | null): Pixels {
   const grid = asciiGrid(src, opts);
   const { width, height } = src;
   const canvas = document.createElement("canvas");
@@ -78,8 +84,11 @@ export function asciiEffect(src: Pixels, opts: AsciiEffect, fg: RGB, bg: RGB): P
   canvas.height = height;
   const ctx = canvas.getContext("2d")!;
 
-  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
-  ctx.fillRect(0, 0, width, height);
+  // Fresh canvas is fully transparent. Only fill when an opaque paper color is requested.
+  if (bg !== null) {
+    ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+    ctx.fillRect(0, 0, width, height);
+  }
   ctx.font = opts.font;
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";

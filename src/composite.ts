@@ -30,6 +30,9 @@ export function blendRGB(mode: BlendMode, base: RGB, effect: RGB): RGB {
  * Effect layer over base layer, gated by a binary mask.
  * `gate` contains only 0 and 1 and has length width*height.
  * Where gate is 0 the base pixel is copied through byte-identically.
+ * The effect layer's alpha controls per-pixel coverage: coverage is
+ * (effectAlpha / 255) * opacity. Alpha 0 means the base passes through
+ * untouched even where the gate is 1.
  * Returns a new Pixels. Neither input is mutated. Base alpha is preserved.
  */
 export function composite(
@@ -59,17 +62,18 @@ export function composite(
       continue;
     }
 
+    const a = (effect.data[o + 3]! / 255) * opacity;
     const blended = blendRGB(
       blend,
       [base.data[o]!, base.data[o + 1]!, base.data[o + 2]!],
       [effect.data[o]!, effect.data[o + 1]!, effect.data[o + 2]!],
     );
-    out[o] = Math.round(base.data[o]! + (blended[0] - base.data[o]!) * opacity);
+    out[o] = Math.round(base.data[o]! + (blended[0] - base.data[o]!) * a);
     out[o + 1] = Math.round(
-      base.data[o + 1]! + (blended[1] - base.data[o + 1]!) * opacity,
+      base.data[o + 1]! + (blended[1] - base.data[o + 1]!) * a,
     );
     out[o + 2] = Math.round(
-      base.data[o + 2]! + (blended[2] - base.data[o + 2]!) * opacity,
+      base.data[o + 2]! + (blended[2] - base.data[o + 2]!) * a,
     );
     out[o + 3] = base.data[o + 3]!;
   }

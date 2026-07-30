@@ -35,12 +35,30 @@ function collectRgb(px: Pixels): Set<string> {
   return set;
 }
 
+function collectInkRgb(px: Pixels): Set<string> {
+  const set = new Set<string>();
+  for (let i = 0; i < px.data.length; i += 4) {
+    if (px.data[i + 3] === 255) {
+      set.add(`${px.data[i]},${px.data[i + 1]},${px.data[i + 2]}`);
+    }
+  }
+  return set;
+}
+
 function countInk(px: Pixels, fg: RGB): number {
   let n = 0;
   for (let i = 0; i < px.data.length; i += 4) {
     if (px.data[i] === fg[0] && px.data[i + 1] === fg[1] && px.data[i + 2] === fg[2]) {
       n++;
     }
+  }
+  return n;
+}
+
+function countAlpha255(px: Pixels): number {
+  let n = 0;
+  for (let i = 3; i < px.data.length; i += 4) {
+    if (px.data[i] === 255) n++;
   }
   return n;
 }
@@ -139,20 +157,79 @@ describe("halftoneEffect cell size, immutability, alpha", () => {
     expect(src.data).toEqual(snapshot);
   });
 
-  it("preserves alpha byte for byte", () => {
-    const w = 8;
-    const h = 8;
-    const data = new Uint8ClampedArray(w * h * 4);
-    for (let i = 0; i < data.length; i += 4) {
-      data[i] = 128;
-      data[i + 1] = 128;
-      data[i + 2] = 128;
-      data[i + 3] = (i / 4) * 4; // varying alpha
+  it("alpha is 255 for ink and 0 for paper when bg is null", () => {
+    const src = solid(16, 16, 128, 128, 128);
+    const out = halftoneEffect(src, opts(), FG, null);
+    for (let i = 0; i < out.data.length; i += 4) {
+      expect([0, 255]).toContain(out.data[i + 3]);
     }
-    const src: Pixels = { data, width: w, height: h };
+    expect(countAlpha255(out)).toBeGreaterThan(0);
+    expect(countAlpha255(out)).toBeLessThan(out.width * out.height);
+  });
+});
+
+describe("halftoneEffect transparent paper contract", () => {
+  it("transparent paper: mid-gray yields mixed alpha 0/255 only", () => {
+    const src = solid(16, 16, 128, 128, 128);
+    const out = halftoneEffect(src, opts(), FG, null);
+    let has0 = false;
+    let has255 = false;
+    for (let i = 3; i < out.data.length; i += 4) {
+      const a = out.data[i]!;
+      expect(a === 0 || a === 255).toBe(true);
+      if (a === 0) has0 = true;
+      if (a === 255) has255 = true;
+    }
+    expect(has0).toBe(true);
+    expect(has255).toBe(true);
+  });
+
+  it("ink pixels carry the foreground in mono with bg null", () => {
+    const src = solid(16, 16, 128, 128, 128);
+    const out = halftoneEffect(src, opts(), FG, null);
+    const inkColors = collectInkRgb(out);
+    expect(inkColors.size).toBeGreaterThan(0);
+    for (const triple of inkColors) {
+      expect(triple).toBe(`${FG[0]},${FG[1]},${FG[2]}`);
+    }
+  });
+
+  it("opaque mode: every pixel alpha 255 and RGB subset of {fg, bg}", () => {
+    const src = solid(16, 16, 128, 128, 128);
     const out = halftoneEffect(src, opts(), FG, BG);
-    for (let i = 0; i < data.length; i += 4) {
-      expect(out.data[i + 3]).toBe(data[i + 3]);
+    const allowed = new Set([`${FG[0]},${FG[1]},${FG[2]}`, `${BG[0]},${BG[1]},${BG[2]}`]);
+    for (let i = 0; i < out.data.length; i += 4) {
+      expect(out.data[i + 3]).toBe(255);
     }
+    for (const triple of collectRgb(out)) {
+      expect(allowed.has(triple)).toBe(true);
+    }
+  });
+
+  it("ink coverage tracks tone: darker input has more alpha-255 pixels", () => {
+    const dark = solid(24, 24, 64, 64, 64);
+    const light = solid(24, 24, 192, 192, 192);
+    const darkOut = halftoneEffect(dark, opts({ cell: 6 }), FG, null);
+    const lightOut = halftoneEffect(light, opts({ cell: 6 }), FG, null);
+    expect(countAlpha255(darkOut)).toBeGreaterThan(countAlpha255(lightOut));
+  });
+
+  it("all-black is entirely alpha 255; all-white is entirely alpha 0 (mono, bg null)", () => {
+    const black = solid(8, 8, 0, 0, 0);
+    const white = solid(8, 8, 255, 255, 255);
+    const blackOut = halftoneEffect(black, opts(), FG, null);
+    const whiteOut = halftoneEffect(white, opts(), FG, null);
+    expect(countAlpha255(blackOut)).toBe(black.width * black.height);
+    expect(countAlpha255(whiteOut)).toBe(0);
+    for (let i = 3; i < whiteOut.data.length; i += 4) {
+      expect(whiteOut.data[i]).toBe(0);
+    }
+  });
+
+  it("does not mutate the input Pixels.data (transparent path)", () => {
+    const src = solid(8, 8, 50, 100, 150, 200);
+    const snapshot = new Uint8ClampedArray(src.data);
+    halftoneEffect(src, opts(), FG, null);
+    expect(src.data).toEqual(snapshot);
   });
 });

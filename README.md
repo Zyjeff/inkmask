@@ -116,7 +116,9 @@ Discriminated by `kind`. Default effect is dither. Per-kind defaults come from `
 | `blend` | `"normal" \| "multiply" \| "screen" \| "overlay"` | `"normal"` | Blend mode for the effect layer where the gate is 1. |
 | `opacity` | `number` | `1` | 0–1, applied after the binary mask gate. |
 | `foreground` | `string` | `"#000000"` | Hex color used by `mono` effects (ink). |
-| `background` | `string` | `"#ffffff"` | Hex color used by `mono` effects (paper). |
+| `background` | `string \| null` | `null` | Transparent paper by default: the source shows through between marks. A hex value paints opaque paper. |
+
+**Blending the marks into the image.** Because paper is transparent, `blend` and `opacity` act on the marks themselves against the photograph rather than on a solid effect rectangle. `foreground: "#ffffff"` with `blend: "screen"` lifts the marks into the highlights; `blend: "overlay"` increases local contrast around each mark. A plain `opacity` below 1 with white or black ink gives a softer overlay. With `color: "source"`, each mark is tinted with the underlying image’s own color.
 
 ## API
 

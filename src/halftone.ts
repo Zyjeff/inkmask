@@ -3,9 +3,10 @@ import { relativeLuminance } from "./color.js";
 
 /**
  * Render the entire source as a rotated halftone screen.
- * Returns a new Pixels; the input is not mutated. Alpha is copied through.
+ * Returns a new Pixels; the input is not mutated.
+ * Alpha is 255 for ink and 0 for paper when `bg` is null; otherwise paper is opaque `bg`.
  */
-export function halftoneEffect(src: Pixels, opts: HalftoneEffect, fg: RGB, bg: RGB): Pixels {
+export function halftoneEffect(src: Pixels, opts: HalftoneEffect, fg: RGB, bg: RGB | null): Pixels {
   const { data, width, height } = src;
   const out = new Uint8ClampedArray(data.length);
   const cell = opts.cell;
@@ -55,7 +56,7 @@ export function halftoneEffect(src: Pixels, opts: HalftoneEffect, fg: RGB, bg: R
         ink = Math.max(Math.abs(rx - ccx), Math.abs(ry - ccy)) <= extent;
       }
 
-      // 5. Emit colors
+      // 5. Emit colors — ink always alpha 255; paper is bg or transparent
       if (ink) {
         if (mono) {
           out[i] = fg[0];
@@ -66,12 +67,18 @@ export function halftoneEffect(src: Pixels, opts: HalftoneEffect, fg: RGB, bg: R
           out[i + 1] = sg;
           out[i + 2] = sb;
         }
-      } else {
+        out[i + 3] = 255;
+      } else if (bg !== null) {
         out[i] = bg[0];
         out[i + 1] = bg[1];
         out[i + 2] = bg[2];
+        out[i + 3] = 255;
+      } else {
+        out[i] = 0;
+        out[i + 1] = 0;
+        out[i + 2] = 0;
+        out[i + 3] = 0;
       }
-      out[i + 3] = data[i + 3]!;
     }
   }
 

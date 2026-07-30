@@ -33,6 +33,20 @@
 - **Blue noise held up visually.** The thin 1024-point margin (1.580 vs 1.5) did not translate into a visible defect; `gradient-dither.png` shows a clean dot dissolve with no clumping.
 - **`tsc` was never run after `tests/package.test.ts` landed** — 6 type errors sat in the tree while the suite stayed green, because vitest transpiles without typechecking. Fixed by adding `@types/node`. Any spec that adds a file must list `tsc` in its verification commands.
 
+## The effect layer is ink on transparent
+
+Originally the effects filled the whole frame with `background` and drew ink on top, producing an **opaque** layer. Wherever the mask gated on, the photograph was replaced by flat paper plus marks — so it read as the original being masked out, the opposite of the intent. The base was underneath the whole time; it just never showed.
+
+Now:
+
+- `ditherEffect` / `halftoneEffect` / `asciiEffect` take `bg: RGB | null`. Null means paper pixels get **alpha 0**; ink gets 255. ASCII simply never fills its canvas, so antialiased glyph edges carry partial alpha, which is real ink coverage and is kept.
+- `composite` scales each gated pixel by `(effectAlpha / 255) * opacity`. Alpha 0 leaves the base byte-identical *even where the gate is 1*.
+- `DEFAULTS.background` is `null`. Passing a hex color restores the opaque layer.
+
+This is what makes `blend` meaningful: marks now blend against the photograph rather than against flat paper. `foreground: "#ffffff"` with `blend: "screen"` lifts marks into highlights; `overlay` raises local contrast; `color: "source"` tints each mark with the underlying image.
+
+**The guard:** `scripts/render-fixtures.mjs` reports `gated %` and `changed %` per fixture and exits non-zero if `changed >= gated` on any transparent fixture. An opaque layer changes every gated pixel; ink-on-transparent changes strictly fewer. Measured: eagle ASCII 19.9% gated / 13.8% changed; the deliberately opaque comparison sits at 100% / 100%.
+
 ## Found by code review, after the suite was already green
 
 Two tests were passing for the wrong reason. Neither was visible from test names or pass counts.

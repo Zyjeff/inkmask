@@ -3,8 +3,9 @@ import { asciiGrid } from "../src/ascii.js";
 import { resolveMaskToCells } from "../src/mask.js";
 import type { AsciiEffect, Pixels, RGB } from "../src/types.js";
 
-// asciiEffect is verified in the browser harness instead — it needs a real
-// canvas/font and is not called from any test in this Node suite.
+// asciiEffect needs a real canvas/font and is not called from any test in this
+// Node suite. Its transparency behavior (glyphs on transparent when bg is null)
+// is verified specifically in the browser harness.
 
 function pixels(
   width: number,
@@ -75,6 +76,19 @@ describe("asciiGrid", () => {
     const white = asciiGrid(solid(4, 4, 255, 255, 255), opts);
     for (const c of black.chars) expect(c).toBe(ramp[0]);
     for (const c of white.chars) expect(c).toBe(ramp[ramp.length - 1]);
+  });
+
+  // Pins the contract asciiGrid shares with the renderer: ramp[0] = dark,
+  // last glyph = light. asciiEffect draws these glyphs onto a transparent
+  // canvas when bg is null, so the photograph shows through between and
+  // inside characters.
+  it("ramp orientation is unambiguous: dark cell → ramp[0], light cell → last glyph", () => {
+    const ramp = " .:-=+*#%@";
+    const opts = asciiOpts({ ramp, cellWidth: 2, cellHeight: 2 });
+    const dark = asciiGrid(solid(2, 2, 0, 0, 0), opts);
+    const light = asciiGrid(solid(2, 2, 255, 255, 255), opts);
+    expect(dark.chars[0]).toBe(ramp[0]);
+    expect(light.chars[0]).toBe(ramp[ramp.length - 1]);
   });
 
   it("is deterministic: two calls on the same input return identical chars", () => {

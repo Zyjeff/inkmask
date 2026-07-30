@@ -84,7 +84,11 @@ export interface InkmaskOptions {
   opacity?: number;
   /** Hex color, e.g. "#000000". Used by `mono` effects. */
   foreground?: string;
-  background?: string;
+  /**
+   * Hex color paints opaque paper behind the effect. `null` (the default)
+   * leaves paper transparent so the source image shows through between the marks.
+   */
+  background?: string | null;
 }
 
 export interface InkmaskResult {

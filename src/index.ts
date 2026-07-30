@@ -42,7 +42,7 @@ export const DEFAULTS: {
   blend: BlendMode;
   opacity: number;
   foreground: string;
-  background: string;
+  background: string | null;
 } = {
   // Thresholds are linear-light luminance. sRGB mid-gray (128) is linear
   // ~0.216, not 0.5; a band reaching high: 0.5 would gate the whole frame.
@@ -64,7 +64,9 @@ export const DEFAULTS: {
   blend: "normal",
   opacity: 1,
   foreground: "#000000",
-  background: "#ffffff",
+  // Paper is transparent by default so the base image shows through between
+  // marks. Set `background` to a hex color to restore an opaque effect layer.
+  background: null,
 };
 
 /** Per-kind effect defaults. DEFAULTS.effect remains the dither default. */
@@ -195,7 +197,7 @@ export function applyInkmask(src: Pixels, options?: InkmaskOptions): InkmaskResu
   const { coverage, gate } = computeGate(src, options);
 
   const fg = parseHex(foreground);
-  const bg = parseHex(background);
+  const bg = background === null ? null : parseHex(background);
 
   let effectLayer: Pixels;
   switch (effect.kind) {

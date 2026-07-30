@@ -442,4 +442,78 @@ describe("applyInkmask", () => {
     expect(arraysEqual(dither.coverage, halftone.coverage)).toBe(true);
     expect(arraysEqual(dither.coverage, ascii.coverage)).toBe(true);
   });
+
+  /**
+   * Photo-like gradient: no pure black or white, so mono ink/paper always
+   * differ from the source when the effect layer is opaque.
+   */
+  function photoGradient(w: number, h: number): Pixels {
+    return pixels(w, h, (x, y) => {
+      const r = Math.round(20 + (x / (w - 1)) * 200);
+      const g = Math.round(20 + (y / (h - 1)) * 200);
+      const b = Math.round(20 + ((x + y) / (w + h - 2)) * 200);
+      return [r, g, b, 200 + (x % 56)];
+    });
+  }
+
+  function countGatedAndDiffering(
+    src: Pixels,
+    out: Pixels,
+    gate: Uint8Array,
+  ): { gated: number; differing: number; ungatedOk: boolean } {
+    let gated = 0;
+    let differing = 0;
+    let ungatedOk = true;
+    for (let i = 0; i < gate.length; i++) {
+      const o = i * 4;
+      const same =
+        out.data[o] === src.data[o] &&
+        out.data[o + 1] === src.data[o + 1] &&
+        out.data[o + 2] === src.data[o + 2] &&
+        out.data[o + 3] === src.data[o + 3];
+      if (gate[i] === 1) {
+        gated++;
+        if (!same) differing++;
+      } else if (!same) {
+        ungatedOk = false;
+      }
+    }
+    return { gated, differing, ungatedOk };
+  }
+
+  it("Transparent paper is the default, and the base shows through", () => {
+    const src = photoGradient(48, 48);
+    const { pixels: out, gate } = applyInkmask(src);
+    const { gated, differing } = countGatedAndDiffering(src, out, gate);
+
+    // Marks landed, but paper between them is transparent so the base still
+    // shows through. An opaque effect layer would make these two counts equal.
+    expect(differing).toBeGreaterThan(0);
+    expect(differing).toBeLessThan(gated);
+  });
+
+  it("An explicit background restores opaque behavior", () => {
+    const src = photoGradient(48, 48);
+    const { pixels: out, gate } = applyInkmask(src, {
+      background: "#ffffff",
+    });
+    const { gated, differing } = countGatedAndDiffering(src, out, gate);
+
+    // Opaque paper + ink: every gated pixel differs from the source.
+    expect(gated).toBeGreaterThan(0);
+    expect(differing).toBe(gated);
+  });
+
+  it("Ungated pixels are still byte-identical under transparent and opaque paper", () => {
+    const src = photoGradient(48, 48);
+
+    const transparent = applyInkmask(src);
+    const opaque = applyInkmask(src, { background: "#ffffff" });
+
+    const t = countGatedAndDiffering(src, transparent.pixels, transparent.gate);
+    const o = countGatedAndDiffering(src, opaque.pixels, opaque.gate);
+
+    expect(t.ungatedOk).toBe(true);
+    expect(o.ungatedOk).toBe(true);
+  });
 });
