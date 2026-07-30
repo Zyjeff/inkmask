@@ -20,6 +20,7 @@
     "registry": "node scripts/build-registry.mjs",
     "fixtures": "node scripts/render-fixtures.mjs",
     "example": "node scripts/serve.mjs",
+    "showcase": "npm run build && node scripts/build-showcase.mjs",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": { "react": ">=18" },

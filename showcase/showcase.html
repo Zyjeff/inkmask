@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>inkmask — specimen sheet</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper: #D6D8D6;
+      --well: #C9CCC9;
+      --ink: #131614;
+      --ink-2: #565B57;
+      --rule: rgba(19, 22, 20, 0.16);
+      --accent: #0090C8;
+
+      --display: "Franklin Gothic Medium", "Franklin Gothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --body: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      --mono: Consolas, "SF Mono", Menlo, "Courier New", monospace;
+
+      --rail-w: 200px;
+      --sheet-max: 1500px;
+      --outer: clamp(16px, 4vw, 48px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #101210;
+        --well: #191C1A;
+        --ink: #E6E8E5;
+        --ink-2: #9AA09B;
+        --rule: rgba(230, 232, 229, 0.14);
+        --accent: #33C2F0;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --paper: #101210;
+      --well: #191C1A;
+      --ink: #E6E8E5;
+      --ink-2: #9AA09B;
+      --rule: rgba(230, 232, 229, 0.14);
+      --accent: #33C2F0;
+    }
+
+    :root[data-theme="light"] {
+      --paper: #D6D8D6;
+      --well: #C9CCC9;
+      --ink: #131614;
+      --ink-2: #565B57;
+      --rule: rgba(19, 22, 20, 0.16);
+      --accent: #0090C8;
+    }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--body);
+      font-size: 17px;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+      text-underline-offset: 3px;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .sheet {
+      max-width: var(--sheet-max);
+      margin: 0 auto;
+      padding: var(--outer);
+      display: grid;
+      grid-template-columns: var(--rail-w) minmax(0, 1fr);
+      gap: clamp(24px, 4vw, 56px);
+      align-items: start;
+    }
+
+    /* ---------- sticky left rail ---------- */
+    .rail {
+      position: sticky;
+      top: var(--outer);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .rail-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .rail-nav a {
+      color: var(--ink-2);
+      transition: color 120ms ease;
+    }
+
+    .rail-nav a:hover {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .rail-nav a.is-active {
+      color: var(--accent);
+    }
+
+    .rail-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 16px;
+      border-top: 1px solid var(--rule);
+      letter-spacing: 0.08em;
+      line-height: 1.5;
+    }
+
+    .rail-legend strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    /* ---------- main column ---------- */
+    .content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ---------- masthead ---------- */
+    .masthead {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 8px;
+    }
+
+    .masthead-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: 88px;
+      font-weight: 500;
+      line-height: 0.92;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .theme-toggle {
+      flex-shrink: 0;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      background: transparent;
+      border: 1px solid var(--rule);
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--ink);
+      border-color: var(--ink-2);
+    }
+
+    .masthead-kicker {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .masthead-lede {
+      max-width: 65ch;
+      font-family: var(--body);
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+
+    /* ---------- plates ---------- */
+    .plate {
+      padding: 48px 0;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 480ms ease, transform 480ms ease;
+    }
+
+    .plate.is-inview {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .plate:last-of-type {
+      border-bottom: none;
+    }
+
+    .plate-label {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .plate-frame {
+      position: relative;
+      background: var(--well);
+      border: 1px solid var(--rule);
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .plate-frame--hero {
+      max-width: 100%;
+    }
+
+    .plate-frame canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      vertical-align: top;
+    }
+
+    .plate-slot {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 900 / 580;
+      background: var(--well);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plate-slot--hero {
+      aspect-ratio: 16 / 9;
+      min-height: 320px;
+    }
+
+    .plate-slot canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .plate-placeholder {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* registration crosses — four corners */
+    .reg {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.45;
+      color: var(--ink-2);
+    }
+
+    .reg svg {
+      display: block;
+      width: 12px;
+      height: 12px;
+    }
+
+    .reg--tl { top: 6px; left: 6px; }
+    .reg--tr { top: 6px; right: 6px; }
+    .reg--bl { bottom: 6px; left: 6px; }
+    .reg--br { bottom: 6px; right: 6px; }
+
+    /* ---------- hero chips + readout ---------- */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: 100%;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-2);
+      background: transparent;
+      border: 1px solid var(--rule);
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+    }
+
+    .chip:hover {
+      color: var(--ink);
+      border-color: var(--ink-2);
+    }
+
+    .chip[aria-pressed="true"] {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .hero-readout {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      color: var(--ink-2);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 65ch;
+    }
+
+    .hero-readout .stats {
+      color: var(--ink);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero-caption {
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink-2);
+      max-width: 65ch;
+    }
+
+    /* ---------- plate meta: caption + options ---------- */
+    .plate-meta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px 32px;
+      max-width: 900px;
+    }
+
+    .plate-caption {
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink);
+      max-width: 42ch;
+    }
+
+    .plate-options {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.55;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-2);
+      background: var(--well);
+      border: 1px solid var(--rule);
+      padding: 14px 16px;
+      overflow-x: auto;
+      white-space: pre;
+      max-width: 100%;
+    }
+
+    /* ---------- footer ---------- */
+    .sheet-footer {
+      padding: 40px 0 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+      border-top: 1px solid var(--rule);
+      margin-top: 8px;
+    }
+
+    /* ---------- reduced motion ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+
+      .plate {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+
+      .chip,
+      .theme-toggle,
+      .rail-nav a {
+        transition: none;
+      }
+    }
+
+    /* ---------- responsive: rail becomes horizontal strip ---------- */
+    @media (max-width: 899px) {
+      .sheet {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding-top: 0;
+      }
+
+      .rail {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: var(--paper);
+        border-bottom: 1px solid var(--rule);
+        margin-left: calc(-1 * var(--outer));
+        margin-right: calc(-1 * var(--outer));
+        padding: 12px var(--outer);
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .rail-nav {
+        flex-direction: row;
+        gap: 16px;
+        flex-shrink: 0;
+      }
+
+      .rail-legend {
+        flex-direction: row;
+        flex-shrink: 0;
+        gap: 12px;
+        padding-top: 0;
+        padding-left: 16px;
+        border-top: none;
+        border-left: 1px solid var(--rule);
+        white-space: nowrap;
+      }
+
+      .page-title {
+        font-size: 56px;
+      }
+
+      .plate-meta {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .plate {
+        padding: 36px 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-title {
+        font-size: 34px;
+      }
+
+      .masthead-kicker {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+      }
+
+      .chip {
+        font-size: 11px;
+        padding: 7px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <nav class="rail" aria-label="Plate index">
+      <div class="rail-nav" role="list">
+        <a href="#plate-00" role="listitem" data-plate="plate-00">PLATE 00</a>
+        <a href="#plate-01" role="listitem" data-plate="plate-01">PLATE 01</a>
+        <a href="#plate-02" role="listitem" data-plate="plate-02">PLATE 02</a>
+        <a href="#plate-03" role="listitem" data-plate="plate-03">PLATE 03</a>
+        <a href="#plate-04" role="listitem" data-plate="plate-04">PLATE 04</a>
+        <a href="#plate-05" role="listitem" data-plate="plate-05">PLATE 05</a>
+        <a href="#plate-06" role="listitem" data-plate="plate-06">PLATE 06</a>
+      </div>
+      <div class="rail-legend">
+        <span><strong>inkmask</strong> 0.1.0</span>
+        <span>dither · halftone · ascii</span>
+      </div>
+    </nav>
+
+    <div class="content">
+      <header class="masthead">
+        <div class="masthead-top">
+          <h1 class="page-title">inkmask</h1>
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle colour theme">
+            THEME
+          </button>
+        </div>
+        <p class="masthead-kicker">Ordered dither · Halftone · ASCII — applied to part of an image</p>
+        <p class="masthead-lede">
+          Every other library in this space replaces the image with a fully processed version.
+          This one keeps the original and lays the treatment over only the part the mask selects,
+          dissolving into scattered dots rather than stopping at a hard edge.
+        </p>
+      </header>
+
+      <main>
+        <!-- PLATE 00 — Hero -->
+        <section class="plate" id="plate-00" data-plate-index="0">
+          <p class="plate-label" id="hero-label">PLATE 00 — HERO — INTERACTIVE</p>
+          <figure class="plate-frame plate-frame--hero">
+            <div class="plate-slot plate-slot--hero" id="hero-slot">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="chip-row" role="group" aria-label="Treatment selection">
+            <button type="button" class="chip" data-treatment="halftone-ink" aria-pressed="true">HALFTONE / INK</button>
+            <button type="button" class="chip" data-treatment="ascii-screen" aria-pressed="false">ASCII / SCREEN</button>
+            <button type="button" class="chip" data-treatment="dither-bluenoise" aria-pressed="false">DITHER / BLUE NOISE</button>
+            <button type="button" class="chip" data-treatment="halftone-overlay" aria-pressed="false">HALFTONE / OVERLAY</button>
+            <button type="button" class="chip" data-treatment="unmasked" aria-pressed="false">UNMASKED</button>
+          </div>
+          <div class="hero-readout" id="hero-readout" aria-live="polite">
+            <p class="stats">GATED — · CHANGED —</p>
+            <p>Changed is lower than gated because the source shows through between the marks.</p>
+          </div>
+          <p class="hero-caption" id="hero-caption">
+            Dark-ink circular halftone at 8px and 45°. The band opens on the luminous blooms so the marks sit in the highlights and dissolve into the clean dark ground.
+          </p>
+        </section>
+
+        <!-- PLATE 01 — Ember -->
+        <section class="plate" id="plate-01" data-plate-index="1">
+          <p class="plate-label">PLATE 01 — EMBER — 45DEG — 9PX CELL</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="1">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Dark-ink circular halftone at 9px and 45°. The band opens on the luminous magenta and orange blooms so the marks sit in the highlights and dissolve into the continuous dark ground.
+            </p>
+            <pre class="plate-options" id="opts-01"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 02 — Halide -->
+        <section class="plate" id="plate-02" data-plate-index="2">
+          <p class="plate-label">PLATE 02 — HALIDE — 10×14 ASCII — SCREEN</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="2">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              White ASCII on a 10×14 cell grid under screen blend. Glyph density lands on the cyan and violet blooms; outside the band the dark ground stays untouched.
+            </p>
+            <pre class="plate-options" id="opts-02"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 03 — Crimson -->
+        <section class="plate" id="plate-03" data-plate-index="3">
+          <p class="plate-label">PLATE 03 — CRIMSON — 75DEG — 5PX CELL</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="3">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              White circular halftone at 5px and 75° under screen blend. Rosettes open on the crimson blooms and dissolve into the continuous dark ground.
+            </p>
+            <pre class="plate-options" id="opts-03"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 04 — Cobalt -->
+        <section class="plate" id="plate-04" data-plate-index="4">
+          <p class="plate-label">PLATE 04 — COBALT — BAYER 8 — 3× SCALE — SCREEN</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="4">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Bayer-8 ordered dither scaled 3×, mono white on screen blend. The coarse lattice lights the cobalt blooms and fades out into the clean dark ground.
+            </p>
+            <pre class="plate-options" id="opts-04"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 05 — Sulphur -->
+        <section class="plate" id="plate-05" data-plate-index="5">
+          <p class="plate-label">PLATE 05 — SULPHUR — 15DEG — 7PX SQUARE</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="5">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Square-cell halftone at 7px and 15°, dark ink at 0.9 opacity. A higher low confines the marks to the brightest acid yellows so the ground stays continuous outside the luminous band.
+            </p>
+            <pre class="plate-options" id="opts-05"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 06 — Orchid -->
+        <section class="plate" id="plate-06" data-plate-index="6">
+          <p class="plate-label">PLATE 06 — ORCHID — 10×15 BLOCK RAMP — NORMAL 0.85</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="6">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Block-shade ASCII on a 10×15 grid, dark foreground at 0.85 opacity. Larger cells and a higher low keep the glyphs as deliberate shapes on the orchid and pink blooms rather than an all-over texture.
+            </p>
+            <pre class="plate-options" id="opts-06"></pre>
+          </div>
+        </section>
+      </main>
+
+      <footer class="sheet-footer">
+        inkmask specimen · process cyan for interactive state only · no network assets
+      </footer>
+    </div>
+  </div>
+
+<!--INKMASK_BUNDLE-->
+<script type="module">
+/**
+ * Page logic runs after the bundle marker. Poll briefly for window.inkmask
+ * until the injected library is present (or give up with a quiet message).
+ */
+
+const BLOCK_RAMP = "\u2588\u2593\u2592\u2591\u00B7  ";
+
+const HERO_SPEC = {
+  ground: "#0B0708",
+  blooms: [
+    { color: "#FF2E86", x: 0.26, y: 0.34, r: 0.40, blur: 70 },
+    { color: "#FF7A18", x: 0.66, y: 0.60, r: 0.44, blur: 80 },
+    { color: "#FFD9A0", x: 0.84, y: 0.22, r: 0.26, blur: 60 },
+    { color: "#7A0F3C", x: 0.12, y: 0.80, r: 0.36, blur: 90 },
+  ],
+};
+
+const HERO_TREATMENTS = {
+  "halftone-ink": {
+    label: "HALFTONE / INK",
+    caption:
+      "Dark-ink circular halftone at 8px and 45°. The band opens on the luminous blooms so the marks sit in the highlights and dissolve into the clean dark ground.",
+    options: {
+      effect: { kind: "halftone", cell: 8, angle: 45 },
+      mask: { low: 0.16, high: 1, softness: 0.18 },
+      foreground: "#0B0708",
+    },
+  },
+  "ascii-screen": {
+    label: "ASCII / SCREEN",
+    caption:
+      "White ASCII on a 9×13 grid under screen blend. Glyph density lands on the bright blooms; outside the band the dark ground stays untouched.",
+    options: {
+      effect: { kind: "ascii", cellWidth: 9, cellHeight: 13 },
+      mask: { low: 0.18, high: 1, softness: 0.16 },
+      foreground: "#FFFFFF",
+      blend: "screen",
+    },
+  },
+  "dither-bluenoise": {
+    label: "DITHER / BLUE NOISE",
+    caption:
+      "Blue-noise ordered dither in mono white under screen blend. Scattered marks follow the luminous band with no visible period, leaving the ground continuous.",
+    options: {
+      effect: { kind: "dither", matrix: "blueNoise" },
+      mask: { low: 0.14, high: 1, softness: 0.20 },
+      foreground: "#FFFFFF",
+      blend: "screen",
+    },
+  },
+  "halftone-overlay": {
+    label: "HALFTONE / OVERLAY",
+    caption:
+      "Circular halftone at 6px and 15°, white marks under overlay blend. Overlay ties screen density to the plate colour only where the luminous band opens.",
+    options: {
+      effect: { kind: "halftone", cell: 6, angle: 15 },
+      mask: { low: 0.16, high: 1, softness: 0.18 },
+      foreground: "#FFFFFF",
+      blend: "overlay",
+    },
+  },
+  "unmasked": {
+    label: "UNMASKED",
+    caption:
+      "What every other library does: the whole frame is processed. No luminance gate—compare this to the masked treatments in one click.",
+    options: {
+      effect: { kind: "dither", matrix: "blueNoise" },
+      mask: { low: 0, high: 1, softness: 0 },
+      background: "#FFFFFF",
+    },
+  },
+};
+
+const GALLERY = [
+  {
+    id: 1,
+    name: "EMBER",
+    w: 900,
+    h: 580,
+    ground: "#0B0708",
+    blooms: [
+      { color: "#FF2E86", x: 0.28, y: 0.32, r: 0.42, blur: 90 },
+      { color: "#FF7A18", x: 0.62, y: 0.58, r: 0.46, blur: 110 },
+      { color: "#FFE9C9", x: 0.78, y: 0.24, r: 0.30, blur: 80 },
+      { color: "#B31D5B", x: 0.15, y: 0.75, r: 0.38, blur: 120 },
+    ],
+    label: "PLATE 01 — EMBER — 45DEG — 9PX CELL",
+    options: {
+      effect: { kind: "halftone", cell: 9, angle: 45 },
+      mask: { low: 0.16, high: 1, softness: 0.18 },
+      foreground: "#0B0708",
+    },
+    aria: "Plate 01 Ember: dark-ink halftone at 45 degrees, 9 pixel cells",
+  },
+  {
+    id: 2,
+    name: "HALIDE",
+    w: 900,
+    h: 580,
+    ground: "#04100E",
+    blooms: [
+      { color: "#00E39A", x: 0.22, y: 0.68, r: 0.44, blur: 100 },
+      { color: "#21D4FD", x: 0.70, y: 0.35, r: 0.42, blur: 95 },
+      { color: "#6E2BFF", x: 0.48, y: 0.85, r: 0.38, blur: 120 },
+      { color: "#B9FFE8", x: 0.85, y: 0.72, r: 0.24, blur: 70 },
+    ],
+    label: "PLATE 02 — HALIDE — 10×14 ASCII — SCREEN",
+    options: {
+      effect: { kind: "ascii", cellWidth: 10, cellHeight: 14 },
+      mask: { low: 0.20, high: 1, softness: 0.14 },
+      foreground: "#FFFFFF",
+      blend: "screen",
+    },
+    aria: "Plate 02 Halide: ASCII glyphs screened over luminous blooms",
+  },
+  {
+    id: 3,
+    name: "CRIMSON",
+    w: 900,
+    h: 580,
+    ground: "#08060A",
+    blooms: [
+      { color: "#E30613", x: 0.35, y: 0.72, r: 0.48, blur: 105 },
+      { color: "#FF9A8B", x: 0.20, y: 0.30, r: 0.34, blur: 85 },
+      { color: "#FFFFFF", x: 0.82, y: 0.20, r: 0.26, blur: 70 },
+      { color: "#5C0410", x: 0.68, y: 0.80, r: 0.40, blur: 130 },
+    ],
+    label: "PLATE 03 — CRIMSON — 75DEG — 5PX CELL",
+    options: {
+      effect: { kind: "halftone", cell: 5, angle: 75 },
+      mask: { low: 0.20, high: 1, softness: 0.16 },
+      foreground: "#FFFFFF",
+      blend: "screen",
+    },
+    aria: "Plate 03 Crimson: white halftone rosettes at 75 degrees, 5 pixel cells, screen blend",
+  },
+  {
+    id: 4,
+    name: "COBALT",
+    w: 900,
+    h: 580,
+    ground: "#050A14",
+    blooms: [
+      { color: "#1B6BFF", x: 0.30, y: 0.40, r: 0.46, blur: 100 },
+      { color: "#46E0FF", x: 0.72, y: 0.62, r: 0.40, blur: 90 },
+      { color: "#FFFFFF", x: 0.55, y: 0.18, r: 0.22, blur: 65 },
+      { color: "#0B2E7A", x: 0.15, y: 0.82, r: 0.42, blur: 125 },
+    ],
+    label: "PLATE 04 — COBALT — BAYER 8 — 3× SCALE — SCREEN",
+    options: {
+      effect: { kind: "dither", matrix: "bayer8", scale: 3 },
+      mask: { low: 0.18, high: 1, softness: 0.15 },
+      foreground: "#FFFFFF",
+      blend: "screen",
+    },
+    aria: "Plate 04 Cobalt: Bayer-8 dither scaled 3x, white on screen blend",
+  },
+  {
+    id: 5,
+    name: "SULPHUR",
+    w: 900,
+    h: 580,
+    ground: "#0D0C04",
+    blooms: [
+      { color: "#E8FF3A", x: 0.62, y: 0.28, r: 0.44, blur: 85 },
+      { color: "#9BE800", x: 0.28, y: 0.58, r: 0.46, blur: 95 },
+      { color: "#FF8A00", x: 0.82, y: 0.74, r: 0.38, blur: 90 },
+      { color: "#FFFFC2", x: 0.46, y: 0.16, r: 0.22, blur: 60 },
+    ],
+    label: "PLATE 05 — SULPHUR — 15DEG — 7PX SQUARE",
+    options: {
+      effect: { kind: "halftone", cell: 7, angle: 15, shape: "square" },
+      mask: { low: 0.30, high: 1, softness: 0.16 },
+      foreground: "#0D0C04",
+      opacity: 0.9,
+    },
+    aria: "Plate 05 Sulphur: square-cell halftone at 15 degrees, dark ink",
+  },
+  {
+    id: 6,
+    name: "ORCHID",
+    w: 900,
+    h: 580,
+    ground: "#0A0610",
+    blooms: [
+      { color: "#C86DD7", x: 0.26, y: 0.36, r: 0.44, blur: 100 },
+      { color: "#FF5FA2", x: 0.66, y: 0.66, r: 0.42, blur: 95 },
+      { color: "#7FD8FF", x: 0.84, y: 0.30, r: 0.26, blur: 75 },
+      { color: "#3B1360", x: 0.40, y: 0.88, r: 0.40, blur: 125 },
+    ],
+    label: "PLATE 06 — ORCHID — 10×15 BLOCK RAMP — NORMAL 0.85",
+    options: {
+      effect: {
+        kind: "ascii",
+        cellWidth: 10,
+        cellHeight: 15,
+        ramp: BLOCK_RAMP,
+      },
+      mask: { low: 0.17, high: 1, softness: 0.20 },
+      foreground: "#0A0610",
+      opacity: 0.85,
+    },
+    aria: "Plate 06 Orchid: block-shade ASCII ramp at 10 by 15 cells, 0.85 opacity",
+  },
+];
+
+/* ---------- helpers ---------- */
+
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16),
+  };
+}
+
+function hexToRgba(hex, a) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+/** Deterministic bloom transform from index — stable across reloads. */
+function bloomTransform(i) {
+  // rot in [-0.6, 0.9], squash in [0.45, 0.8]
+  const rot = -0.6 + ((i * 0.371 + 0.13) % 1.5);
+  const squash = 0.45 + ((i * 0.173 + 0.07) % 0.35);
+  return { rot, squash };
+}
+
+/** Subtle monochrome grain, generated once and reused. */
+let grainCanvas = null;
+function getGrain(w, h) {
+  if (!grainCanvas || grainCanvas.width !== w || grainCanvas.height !== h) {
+    grainCanvas = document.createElement("canvas");
+    grainCanvas.width = w;
+    grainCanvas.height = h;
+    const gctx = grainCanvas.getContext("2d");
+    const img = gctx.createImageData(w, h);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      d[i] = v;
+      d[i + 1] = v;
+      d[i + 2] = v;
+      d[i + 3] = 255;
+    }
+    gctx.putImageData(img, 0, 0);
+  }
+  return grainCanvas;
+}
+
+function paintPlate(ctx, w, h, spec) {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.filter = "none";
+  ctx.fillStyle = spec.ground;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.globalCompositeOperation = "lighter";
+
+  const maxDim = Math.max(w, h);
+  const blooms = spec.blooms || [];
+  for (let i = 0; i < blooms.length; i++) {
+    const b = blooms[i];
+    const cx = b.x * w;
+    const cy = b.y * h;
+    const radius = b.r * maxDim;
+    const { rot, squash } = bloomTransform(i);
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    ctx.scale(1, squash);
+    ctx.translate(-cx, -cy);
+
+    ctx.filter = "blur(" + b.blur + "px)";
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+    grad.addColorStop(0, b.color);
+    // Same hue at zero alpha — never the CSS keyword "transparent"
+    grad.addColorStop(1, hexToRgba(b.color, 0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.restore();
+  }
+
+  ctx.filter = "none";
+  ctx.globalCompositeOperation = "source-over";
+
+  // Barely perceptible grain (~2% opacity)
+  ctx.globalAlpha = 0.02;
+  ctx.drawImage(getGrain(w, h), 0, 0, w, h);
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+}
+
+/**
+ * Create a source canvas painted with the plate gradient at CSS size,
+ * with a DPR-scaled backing store (capped at 2).
+ */
+function makeSourceCanvas(cssW, cssH, spec) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  paintPlate(ctx, cssW, cssH, spec);
+  return canvas;
+}
+
+function formatOptions(options) {
+  return JSON.stringify(options, null, 2)
+    .replace(/"([^"]+)":/g, "$1:")
+    .replace(/"/g, '"');
+}
+
+function waitForInkmask(timeoutMs = 4000, intervalMs = 40) {
+  return new Promise((resolve, reject) => {
+    if (window.inkmask && typeof window.inkmask.render === "function") {
+      resolve(window.inkmask);
+      return;
+    }
+    const start = performance.now();
+    const id = setInterval(() => {
+      if (window.inkmask && typeof window.inkmask.render === "function") {
+        clearInterval(id);
+        resolve(window.inkmask);
+        return;
+      }
+      if (performance.now() - start > timeoutMs) {
+        clearInterval(id);
+        reject(new Error("window.inkmask not available"));
+      }
+    }, intervalMs);
+  });
+}
+
+function measureStats(inkmask, sourceCanvas, options) {
+  const src = inkmask.toPixels(sourceCanvas);
+  const { gate } = inkmask.computeGate(src, options);
+  let gated = 0;
+  for (let i = 0; i < gate.length; i++) gated += gate[i];
+  const gatedPct = (gated / gate.length) * 100;
+
+  const { pixels } = inkmask.applyInkmask(src, options);
+  let changed = 0;
+  const n = src.width * src.height;
+  for (let i = 0; i < n; i++) {
+    const o = i * 4;
+    if (
+      src.data[o] !== pixels.data[o] ||
+      src.data[o + 1] !== pixels.data[o + 1] ||
+      src.data[o + 2] !== pixels.data[o + 2] ||
+      src.data[o + 3] !== pixels.data[o + 3]
+    ) {
+      changed++;
+    }
+  }
+  const changedPct = (changed / n) * 100;
+  return { gatedPct, changedPct };
+}
+
+function placeCanvas(slot, canvas, ariaLabel) {
+  slot.innerHTML = "";
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", ariaLabel);
+  // CSS size from backing store ratio is already set by render() as pixel size;
+  // force display size to fill the slot.
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  canvas.style.display = "block";
+  slot.appendChild(canvas);
+}
+
+/* ---------- theme ---------- */
+
+function effectiveTheme() {
+  const stamped = document.documentElement.getAttribute("data-theme");
+  if (stamped === "dark" || stamped === "light") return stamped;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function initTheme() {
+  const btn = document.getElementById("theme-toggle");
+  function syncLabel() {
+    const t = effectiveTheme();
+    btn.textContent = t === "dark" ? "LIGHT" : "DARK";
+    btn.setAttribute(
+      "aria-label",
+      t === "dark" ? "Switch to light theme" : "Switch to dark theme",
+    );
+  }
+  syncLabel();
+  btn.addEventListener("click", () => {
+    const next = effectiveTheme() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    syncLabel();
+  });
+}
+
+/* ---------- scroll reveal + active rail ---------- */
+
+function initMotion() {
+  const plates = document.querySelectorAll(".plate");
+  const railLinks = document.querySelectorAll(".rail-nav a");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduce) {
+    plates.forEach((p) => p.classList.add("is-inview"));
+  } else {
+    const revealObs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number(entry.target.getAttribute("data-plate-index") || 0);
+            const delay = idx * 60;
+            setTimeout(() => entry.target.classList.add("is-inview"), delay);
+            revealObs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -5% 0px" },
+    );
+    plates.forEach((p) => revealObs.observe(p));
+  }
+
+  const sectionObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = entry.target.id;
+        railLinks.forEach((a) => {
+          a.classList.toggle("is-active", a.getAttribute("data-plate") === id);
+        });
+      });
+    },
+    { rootMargin: "-30% 0px -50% 0px", threshold: 0 },
+  );
+  plates.forEach((p) => sectionObs.observe(p));
+}
+
+/* ---------- hero ---------- */
+
+let heroSource = null;
+let currentTreatment = "halftone-ink";
+
+function heroCssSize() {
+  const slot = document.getElementById("hero-slot");
+  const w = Math.max(Math.round(slot.clientWidth) || 900, 320);
+  // Target ~16:9 but at least a substantial plate
+  const h = Math.max(Math.round(w * 9 / 16), 280);
+  return { w, h };
+}
+
+function renderHero(inkmask) {
+  const slot = document.getElementById("hero-slot");
+  const treatment = HERO_TREATMENTS[currentTreatment];
+  const { w, h } = heroCssSize();
+
+  // Rebuild source when size changes significantly
+  if (
+    !heroSource ||
+    Math.abs(heroSource.cssW - w) > 8 ||
+    Math.abs(heroSource.cssH - h) > 8
+  ) {
+    const srcCanvas = makeSourceCanvas(w, h, HERO_SPEC);
+    heroSource = { canvas: srcCanvas, cssW: w, cssH: h };
+  }
+
+  const out = inkmask.render(heroSource.canvas, treatment.options);
+  placeCanvas(
+    slot,
+    out,
+    "Plate 00 hero: " + treatment.label.toLowerCase() + " treatment on gradient plate",
+  );
+
+  const stats = measureStats(inkmask, heroSource.canvas, treatment.options);
+  const readout = document.getElementById("hero-readout");
+  readout.innerHTML =
+    '<p class="stats">GATED ' +
+    stats.gatedPct.toFixed(1) +
+    "% · CHANGED " +
+    stats.changedPct.toFixed(1) +
+    "%</p>" +
+    "<p>Changed is lower than gated because the source shows through between the marks.</p>";
+
+  document.getElementById("hero-caption").textContent = treatment.caption;
+  document.getElementById("hero-label").textContent =
+    "PLATE 00 — HERO — " + treatment.label;
+}
+
+function initHeroChips(inkmask) {
+  const chips = document.querySelectorAll(".chip");
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const key = chip.getAttribute("data-treatment");
+      if (!key || !HERO_TREATMENTS[key]) return;
+      currentTreatment = key;
+      chips.forEach((c) =>
+        c.setAttribute(
+          "aria-pressed",
+          c === chip ? "true" : "false",
+        ),
+      );
+      renderHero(inkmask);
+    });
+  });
+}
+
+/* ---------- gallery lazy render ---------- */
+
+function fillOptionsDisplay() {
+  for (const plate of GALLERY) {
+    const el = document.getElementById("opts-0" + plate.id);
+    if (el) el.textContent = formatOptions(plate.options);
+  }
+}
+
+function renderGalleryPlate(inkmask, plate) {
+  const slot = document.querySelector(
+    '[data-render-target="' + plate.id + '"]',
+  );
+  if (!slot || slot.dataset.done === "1") return;
+  slot.dataset.done = "1";
+
+  const srcCanvas = makeSourceCanvas(plate.w, plate.h, {
+    ground: plate.ground,
+    blooms: plate.blooms,
+  });
+  const out = inkmask.render(srcCanvas, plate.options);
+  placeCanvas(slot, out, plate.aria);
+
+  // Live coverage figure — same computeGate path as the hero readout.
+  const src = inkmask.toPixels(srcCanvas);
+  const { gate } = inkmask.computeGate(src, plate.options);
+  let gated = 0;
+  for (let i = 0; i < gate.length; i++) gated += gate[i];
+  const gatedPct = (gated / gate.length) * 100;
+  const labelEl = document.querySelector(
+    "#plate-0" + plate.id + " .plate-label",
+  );
+  if (labelEl && plate.label) {
+    labelEl.textContent =
+      plate.label + " · GATED " + gatedPct.toFixed(1) + "%";
+  }
+}
+
+function initLazyGallery(inkmask) {
+  const slots = document.querySelectorAll("[data-render-target]");
+  const obs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = Number(entry.target.getAttribute("data-render-target"));
+        const plate = GALLERY.find((p) => p.id === id);
+        if (plate) {
+          // Yield so UI can paint the placeholder first
+          requestAnimationFrame(() => renderGalleryPlate(inkmask, plate));
+        }
+        obs.unobserve(entry.target);
+      });
+    },
+    { rootMargin: "200px 0px", threshold: 0.01 },
+  );
+  slots.forEach((s) => obs.observe(s));
+}
+
+/* ---------- boot ---------- */
+
+function showBundleMissing() {
+  document.querySelectorAll(".plate-placeholder").forEach((el) => {
+    el.textContent = "BUNDLE PENDING";
+  });
+  const readout = document.getElementById("hero-readout");
+  if (readout) {
+    readout.innerHTML =
+      '<p class="stats">GATED — · CHANGED —</p>' +
+      "<p>Library bundle not injected yet. Run the showcase build script to inject it.</p>";
+  }
+}
+
+async function main() {
+  initTheme();
+  initMotion();
+  fillOptionsDisplay();
+
+  let inkmask;
+  try {
+    inkmask = await waitForInkmask();
+  } catch {
+    showBundleMissing();
+    return;
+  }
+
+  renderHero(inkmask);
+  initHeroChips(inkmask);
+  initLazyGallery(inkmask);
+
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      heroSource = null;
+      renderHero(inkmask);
+    }, 180);
+  });
+}
+
+main();
+</script>
+</body>
+</html>
