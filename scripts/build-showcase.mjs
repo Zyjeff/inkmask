@@ -1,13 +1,16 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
+import { join, dirname, basename, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = join(root, "dist");
 const templatePath = join(root, "showcase", "showcase.html");
 const outPath = join(root, "showcase", "index.html");
+const imagesDir = join(root, "showcase", "src");
 
-const MARKER = "<!--INKMASK_BUNDLE-->";
+const BUNDLE_MARKER = "<!--INKMASK_BUNDLE-->";
+const IMAGES_MARKER = "<!--INKMASK_IMAGES-->";
+const EXPECTED_JPG_COUNT = 5;
 
 /** Built modules in dependency order (types/react omitted). */
 const MODULES = [
@@ -59,11 +62,45 @@ if (!existsSync(templatePath)) {
 }
 
 const template = readFileSync(templatePath, "utf8");
-if (!template.includes(MARKER)) {
+if (!template.includes(BUNDLE_MARKER)) {
   throw new Error(
-    `Marker ${MARKER} not found in showcase/showcase.html. The template must contain exactly that placeholder.`,
+    `Marker ${BUNDLE_MARKER} not found in showcase/showcase.html. The template must contain exactly that placeholder.`,
   );
 }
+if (!template.includes(IMAGES_MARKER)) {
+  throw new Error(
+    `Marker ${IMAGES_MARKER} not found in showcase/showcase.html. The template must contain exactly that placeholder.`,
+  );
+}
+
+if (!existsSync(imagesDir)) {
+  throw new Error(
+    `showcase/src/ is missing. Place the five showcase JPEGs there before building.`,
+  );
+}
+
+const jpgNames = readdirSync(imagesDir).filter(
+  (name) => extname(name).toLowerCase() === ".jpg",
+);
+if (jpgNames.length < EXPECTED_JPG_COUNT) {
+  throw new Error(
+    `Expected at least ${EXPECTED_JPG_COUNT} .jpg files in showcase/src/, found ${jpgNames.length}. ` +
+      `Need library.jpg, eclipse.jpg, heather.jpg, sphere.jpg, chasm.jpg (do not inline .png originals).`,
+  );
+}
+
+const imageMap = {};
+let imagesEncodedBytes = 0;
+for (const name of jpgNames) {
+  const filePath = join(imagesDir, name);
+  const key = basename(name, extname(name));
+  const buf = readFileSync(filePath);
+  const dataUri = `data:image/jpeg;base64,${buf.toString("base64")}`;
+  imageMap[key] = dataUri;
+  imagesEncodedBytes += Buffer.byteLength(dataUri, "utf8");
+}
+
+const imagesScript = `<script>window.__inkmaskImages = ${JSON.stringify(imageMap)};</script>`;
 
 const parts = [];
 for (const name of MODULES) {
@@ -83,11 +120,18 @@ const expose =
   "window.inkmask = { applyInkmask, computeGate, render, toPixels, toPNGBlob, DEFAULTS, EFFECT_DEFAULTS, relativeLuminance, parseHex };";
 
 const scriptBlock = `<script type="module">\n${bundleBody}\n\n${expose}\n</script>`;
-const page = template.replace(MARKER, scriptBlock);
+
+// Images must be injected before the bundle so the page script can rely on both.
+let page = template.replace(IMAGES_MARKER, imagesScript);
+page = page.replace(BUNDLE_MARKER, scriptBlock);
 
 writeFileSync(outPath, page, "utf8");
 
 const bundleBytes = Buffer.byteLength(bundleBody, "utf8");
 const pageBytes = Buffer.byteLength(page, "utf8");
+const imagesKb = (imagesEncodedBytes / 1024).toFixed(1);
+console.log(
+  `Inlined ${Object.keys(imageMap).length} images (${imagesKb} KB encoded)`,
+);
 console.log(`Injected bundle: ${bundleBytes} bytes`);
 console.log(`Wrote ${outPath} (${pageBytes} bytes)`);

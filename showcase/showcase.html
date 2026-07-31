@@ -130,6 +130,15 @@
       color: var(--accent);
     }
 
+    .rail-divider {
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid var(--rule);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--ink-2);
+    }
+
     .rail-legend {
       display: flex;
       flex-direction: column;
@@ -258,6 +267,13 @@
       max-width: 100%;
     }
 
+    /* Photographic plates: narrower frame so square / portrait
+       aspect ratios do not run absurdly tall. Per-plate aspect is
+       set inline on the slot; per-plate width cap inline on the frame. */
+    .plate-frame--photo {
+      max-width: 640px;
+    }
+
     .plate-frame canvas {
       display: block;
       width: 100%;
@@ -377,6 +393,32 @@
       max-width: 65ch;
     }
 
+    /* ---------- photographic gallery head ---------- */
+    .gallery-head {
+      padding: 56px 0 40px;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .gallery-title {
+      font-family: var(--display);
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    .gallery-lede {
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--ink);
+      max-width: 65ch;
+    }
+
     /* ---------- plate meta: caption + options ---------- */
     .plate-meta {
       display: grid;
@@ -478,8 +520,23 @@
         white-space: nowrap;
       }
 
+      .rail-divider {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        padding-left: 16px;
+        border-left: 1px solid var(--rule);
+        white-space: nowrap;
+        flex-shrink: 0;
+        align-self: center;
+      }
+
       .page-title {
         font-size: 56px;
+      }
+
+      .gallery-title {
+        font-size: 30px;
       }
 
       .plate-meta {
@@ -522,6 +579,12 @@
         <a href="#plate-06" role="listitem" data-plate="plate-06">PLATE 06</a>
         <a href="#plate-07" role="listitem" data-plate="plate-07">PLATE 07</a>
         <a href="#plate-08" role="listitem" data-plate="plate-08">PLATE 08</a>
+        <span class="rail-divider" aria-hidden="true">PHOTOGRAPHS</span>
+        <a href="#plate-09" role="listitem" data-plate="plate-09">PLATE 09</a>
+        <a href="#plate-10" role="listitem" data-plate="plate-10">PLATE 10</a>
+        <a href="#plate-11" role="listitem" data-plate="plate-11">PLATE 11</a>
+        <a href="#plate-12" role="listitem" data-plate="plate-12">PLATE 12</a>
+        <a href="#plate-13" role="listitem" data-plate="plate-13">PLATE 13</a>
       </div>
       <div class="rail-legend">
         <span><strong>inkmask</strong> 0.1.0</span>
@@ -733,6 +796,117 @@
             <pre class="plate-options" id="opts-08"></pre>
           </div>
         </section>
+
+        <!-- ---------- photographic plates ---------- -->
+        <div class="gallery-head" id="photographs">
+          <h2 class="gallery-title">Photographic plates</h2>
+          <p class="gallery-lede">
+            The plates above are generated gradients. The five below are photographs,
+            passed through the same mask and composite path unchanged — the band is read
+            from the photograph's own luminance or from position, exactly as it is from
+            a synthetic source.
+          </p>
+        </div>
+
+        <!-- PLATE 09 — Eclipse (photograph) -->
+        <section class="plate" id="plate-09" data-plate-index="9">
+          <p class="plate-label">PLATE 09 — ECLIPSE — PHOTOGRAPH — 45DEG — 7PX — NEGATIVE</p>
+          <figure class="plate-frame plate-frame--photo">
+            <div class="plate-slot" data-photo-target="9" style="aspect-ratio: 1100 / 1100">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Negative polarity: dots grow as tone brightens, so the screen opens only along the lit crescent and the near-black field stays untouched. This is the inverse of a conventional halftone.
+            </p>
+            <pre class="plate-options" id="opts-09"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 10 — Sphere (photograph) -->
+        <section class="plate" id="plate-10" data-plate-index="10">
+          <p class="plate-label">PLATE 10 — SPHERE — PHOTOGRAPH — 15DEG — 6PX — FULL BAND</p>
+          <figure class="plate-frame plate-frame--photo">
+            <div class="plate-slot" data-photo-target="10" style="aspect-ratio: 1100 / 1100">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              A full band, so the whole frame is screened in dark ink with no mask cutout. This is the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect.
+            </p>
+            <pre class="plate-options" id="opts-10"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 11 — Chasm (photograph) -->
+        <section class="plate" id="plate-11" data-plate-index="11">
+          <p class="plate-label">PLATE 11 — CHASM — PHOTOGRAPH — BLUE NOISE 2× — MULTIPLY</p>
+          <figure class="plate-frame plate-frame--photo" style="max-width: 460px">
+            <div class="plate-slot" data-photo-target="11" style="aspect-ratio: 616 / 1100">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Blue-noise dither in dark ink under multiply, landing on the red mass and the deeper tones around it. The band excludes the brightest cyan, so the field the figure stands in comes through untouched.
+            </p>
+            <pre class="plate-options" id="opts-11"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 12 — Heather (photograph) -->
+        <section class="plate" id="plate-12" data-plate-index="12">
+          <p class="plate-label">PLATE 12 — HEATHER — PHOTOGRAPH — LINEAR 90DEG — 6PX</p>
+          <figure class="plate-frame plate-frame--photo">
+            <div class="plate-slot" data-photo-target="12" style="aspect-ratio: 1100 / 1100">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              A positional mask: the field is the pixel's vertical position rather than its colour. The screen fades across the frame regardless of what the photograph contains.
+            </p>
+            <pre class="plate-options" id="opts-12"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 13 — Library (photograph) -->
+        <section class="plate" id="plate-13" data-plate-index="13">
+          <p class="plate-label">PLATE 13 — LIBRARY — PHOTOGRAPH — 8×12 ASCII — SCREEN</p>
+          <figure class="plate-frame plate-frame--photo" style="max-width: 540px">
+            <div class="plate-slot" data-photo-target="13" style="aspect-ratio: 823 / 1100">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              ASCII at an 8×12 cell over the midtones. The mask resolves to the character cell, so no glyph is ever half-masked at the boundary.
+            </p>
+            <pre class="plate-options" id="opts-13"></pre>
+          </div>
+        </section>
       </main>
 
       <footer class="sheet-footer">
@@ -741,6 +915,7 @@
     </div>
   </div>
 
+<!--INKMASK_IMAGES-->
 <!--INKMASK_BUNDLE-->
 <script type="module">
 /**
@@ -990,6 +1165,77 @@ const GALLERY = [
   },
 ];
 
+/**
+ * Photographic plates. Sources are data URIs injected at build time as
+ * window.__inkmaskImages[key]; if the injection has not run, each plate
+ * degrades to a quiet "IMAGE PENDING" placeholder without throwing.
+ */
+const PHOTO_GALLERY = [
+  {
+    id: 9,
+    key: "eclipse",
+    name: "ECLIPSE",
+    label: "PLATE 09 — ECLIPSE — PHOTOGRAPH — 45DEG — 7PX — NEGATIVE",
+    options: {
+      effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+      mask: { low: 0.35, high: 1, softness: 0.25 },
+      foreground: "#F0E2D0",
+      blend: "screen",
+    },
+    aria: "Plate 09 Eclipse: negative-polarity halftone opening along the lit crescent of a photograph",
+  },
+  {
+    id: 10,
+    key: "sphere",
+    name: "SPHERE",
+    label: "PLATE 10 — SPHERE — PHOTOGRAPH — 15DEG — 6PX — FULL BAND",
+    options: {
+      effect: { kind: "halftone", cell: 6, angle: 15 },
+      mask: { low: 0, high: 1, softness: 0 },
+      foreground: "#141210",
+    },
+    aria: "Plate 10 Sphere: conventional full-frame halftone of a photograph, no mask cutout",
+  },
+  {
+    id: 11,
+    key: "chasm",
+    name: "CHASM",
+    label: "PLATE 11 — CHASM — PHOTOGRAPH — BLUE NOISE 2× — MULTIPLY",
+    options: {
+      effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
+      mask: { low: 0, high: 0.60, softness: 0.14 },
+      foreground: "#0A2540",
+      blend: "multiply",
+    },
+    aria: "Plate 11 Chasm: dark blue-noise dither multiplied over saturated colour fields of a photograph",
+  },
+  {
+    id: 12,
+    key: "heather",
+    name: "HEATHER",
+    label: "PLATE 12 — HEATHER — PHOTOGRAPH — LINEAR 90DEG — 6PX",
+    options: {
+      effect: { kind: "halftone", cell: 6, angle: 75 },
+      mask: { source: "linear", angle: 90, low: 0, high: 0.45, softness: 0.30 },
+      foreground: "#2A1520",
+    },
+    aria: "Plate 12 Heather: positional linear mask fading a halftone screen down a photograph",
+  },
+  {
+    id: 13,
+    key: "library",
+    name: "LIBRARY",
+    label: "PLATE 13 — LIBRARY — PHOTOGRAPH — 8×12 ASCII — SCREEN",
+    options: {
+      effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+      mask: { low: 0.40, high: 1, softness: 0.20 },
+      foreground: "#8FA6BC",
+      blend: "screen",
+    },
+    aria: "Plate 13 Library: ASCII glyphs screened over the midtones of a photographed interior",
+  },
+];
+
 /* ---------- helpers ---------- */
 
 function hexToRgb(hex) {
@@ -1096,6 +1342,10 @@ function makeSourceCanvas(cssW, cssH, spec) {
   ctx.scale(dpr, dpr);
   paintPlate(ctx, cssW, cssH, spec);
   return canvas;
+}
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
 }
 
 function formatOptions(options) {
@@ -1302,8 +1552,8 @@ function initHeroChips(inkmask) {
 /* ---------- gallery lazy render ---------- */
 
 function fillOptionsDisplay() {
-  for (const plate of GALLERY) {
-    const el = document.getElementById("opts-0" + plate.id);
+  for (const plate of GALLERY.concat(PHOTO_GALLERY)) {
+    const el = document.getElementById("opts-" + pad2(plate.id));
     if (el) el.textContent = formatOptions(plate.options);
   }
 }
@@ -1329,7 +1579,56 @@ function renderGalleryPlate(inkmask, plate) {
   for (let i = 0; i < gate.length; i++) gated += gate[i];
   const gatedPct = (gated / gate.length) * 100;
   const labelEl = document.querySelector(
-    "#plate-0" + plate.id + " .plate-label",
+    "#plate-" + pad2(plate.id) + " .plate-label",
+  );
+  if (labelEl && plate.label) {
+    labelEl.textContent =
+      plate.label + " · GATED " + gatedPct.toFixed(1) + "%";
+  }
+}
+
+/**
+ * Photographic plate: decode the injected data URI, then run the identical
+ * render + computeGate path the gradient plates use. Degrades quietly when
+ * the build has not injected window.__inkmaskImages.
+ */
+async function renderPhotoPlate(inkmask, plate) {
+  const slot = document.querySelector(
+    '[data-photo-target="' + plate.id + '"]',
+  );
+  if (!slot || slot.dataset.done === "1") return;
+
+  const images = window.__inkmaskImages;
+  const dataUri = images ? images[plate.key] : undefined;
+  if (typeof dataUri !== "string") {
+    const ph = slot.querySelector(".plate-placeholder");
+    if (ph) ph.textContent = "IMAGE PENDING";
+    return;
+  }
+  slot.dataset.done = "1";
+
+  const img = new Image();
+  img.src = dataUri;
+  try {
+    await img.decode();
+  } catch {
+    delete slot.dataset.done;
+    const ph = slot.querySelector(".plate-placeholder");
+    if (ph) ph.textContent = "IMAGE FAILED";
+    return;
+  }
+
+  const out = inkmask.render(img, plate.options);
+  placeCanvas(slot, out, plate.aria);
+
+  // Live coverage figure — same computeGate path as the gradient plates.
+  const src = inkmask.toPixels(img);
+  const { gate } = inkmask.computeGate(src, plate.options);
+  let gated = 0;
+  for (let i = 0; i < gate.length; i++) gated += gate[i];
+  const gatedPct = (gated / gate.length) * 100;
+  const labelEl = document.querySelector(
+    "#plate-" + pad2(plate.id) + " .plate-label",
   );
   if (labelEl && plate.label) {
     labelEl.textContent =
@@ -1338,16 +1637,31 @@ function renderGalleryPlate(inkmask, plate) {
 }
 
 function initLazyGallery(inkmask) {
-  const slots = document.querySelectorAll("[data-render-target]");
+  const slots = document.querySelectorAll(
+    "[data-render-target], [data-photo-target]",
+  );
   const obs = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        const id = Number(entry.target.getAttribute("data-render-target"));
-        const plate = GALLERY.find((p) => p.id === id);
-        if (plate) {
-          // Yield so UI can paint the placeholder first
-          requestAnimationFrame(() => renderGalleryPlate(inkmask, plate));
+        const photoId = entry.target.getAttribute("data-photo-target");
+        if (photoId !== null) {
+          const photo = PHOTO_GALLERY.find((p) => p.id === Number(photoId));
+          if (photo) {
+            // Yield so UI can paint the placeholder first
+            requestAnimationFrame(() => {
+              renderPhotoPlate(inkmask, photo).catch((err) => {
+                console.error("photo plate " + photo.id + " failed:", err);
+              });
+            });
+          }
+        } else {
+          const id = Number(entry.target.getAttribute("data-render-target"));
+          const plate = GALLERY.find((p) => p.id === id);
+          if (plate) {
+            // Yield so UI can paint the placeholder first
+            requestAnimationFrame(() => renderGalleryPlate(inkmask, plate));
+          }
         }
         obs.unobserve(entry.target);
       });

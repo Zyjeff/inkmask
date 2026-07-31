@@ -5,3 +5,6 @@ dist/
 
 # npm pack output
 *.tgz
+
+# Oversized Midjourney PNG originals in showcase (keep downscaled .jpg)
+showcase/src/*.png
