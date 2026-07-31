@@ -367,6 +367,11 @@
       border-color: var(--accent);
     }
 
+    .chip:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
     .hero-readout {
       font-family: var(--mono);
       font-size: 13px;
@@ -804,13 +809,14 @@
             The plates above are generated gradients. The five below are photographs,
             passed through the same mask and composite path unchanged — the band is read
             from the photograph's own luminance or from position, exactly as it is from
-            a synthetic source.
+            a synthetic source. Each plate carries a row of treatments: click a chip to
+            re-render it, including ORIGINAL, which shows the untouched photograph.
           </p>
         </div>
 
         <!-- PLATE 09 — Eclipse (photograph) -->
         <section class="plate" id="plate-09" data-plate-index="9">
-          <p class="plate-label">PLATE 09 — ECLIPSE — PHOTOGRAPH — 45DEG — 7PX — NEGATIVE</p>
+          <p class="plate-label">PLATE 09 — ECLIPSE — PHOTOGRAPH — INVERSE SCREEN</p>
           <figure class="plate-frame plate-frame--photo">
             <div class="plate-slot" data-photo-target="9" style="aspect-ratio: 1100 / 1100">
               <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
@@ -820,9 +826,16 @@
             <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
             <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
           </figure>
+          <div class="chip-row" role="group" aria-label="Plate 09 treatment selection" data-photo-chips="9">
+            <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
+            <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="true">INVERSE SCREEN</button>
+            <button type="button" class="chip" data-treatment="warm-ink" aria-pressed="false">WARM INK</button>
+            <button type="button" class="chip" data-treatment="ascii" aria-pressed="false">ASCII</button>
+            <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+          </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              Negative polarity: dots grow as tone brightens, so the screen opens only along the lit crescent and the near-black field stays untouched. This is the inverse of a conventional halftone.
+              An eclipsed disc: a lit crescent against a near-black field. The default treatment uses negative polarity, so dots grow as tone brightens and the screen opens only along the crescent — the inverse of a conventional halftone. The alternates change the ink colour, swap dots for glyphs, or drop the mask and screen the whole frame.
             </p>
             <pre class="plate-options" id="opts-09"></pre>
           </div>
@@ -830,7 +843,7 @@
 
         <!-- PLATE 10 — Sphere (photograph) -->
         <section class="plate" id="plate-10" data-plate-index="10">
-          <p class="plate-label">PLATE 10 — SPHERE — PHOTOGRAPH — 15DEG — 6PX — FULL BAND</p>
+          <p class="plate-label">PLATE 10 — SPHERE — PHOTOGRAPH — FULL SCREEN</p>
           <figure class="plate-frame plate-frame--photo">
             <div class="plate-slot" data-photo-target="10" style="aspect-ratio: 1100 / 1100">
               <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
@@ -840,9 +853,16 @@
             <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
             <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
           </figure>
+          <div class="chip-row" role="group" aria-label="Plate 10 treatment selection" data-photo-chips="10">
+            <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
+            <button type="button" class="chip" data-treatment="full-screen" aria-pressed="true">FULL SCREEN</button>
+            <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
+            <button type="button" class="chip" data-treatment="highlights" aria-pressed="false">HIGHLIGHTS</button>
+            <button type="button" class="chip" data-treatment="ascii" aria-pressed="false">ASCII</button>
+          </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A full band, so the whole frame is screened in dark ink with no mask cutout. This is the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect.
+              A sphere lit from one side. The default is a full band: the whole frame is screened in dark ink with no mask cutout — the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect. The alternates reintroduce the gate, confining dots, dither, or glyphs to the lit side.
             </p>
             <pre class="plate-options" id="opts-10"></pre>
           </div>
@@ -850,7 +870,7 @@
 
         <!-- PLATE 11 — Chasm (photograph) -->
         <section class="plate" id="plate-11" data-plate-index="11">
-          <p class="plate-label">PLATE 11 — CHASM — PHOTOGRAPH — BLUE NOISE 2× — MULTIPLY</p>
+          <p class="plate-label">PLATE 11 — CHASM — PHOTOGRAPH — RED MASS</p>
           <figure class="plate-frame plate-frame--photo" style="max-width: 460px">
             <div class="plate-slot" data-photo-target="11" style="aspect-ratio: 616 / 1100">
               <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
@@ -860,9 +880,16 @@
             <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
             <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
           </figure>
+          <div class="chip-row" role="group" aria-label="Plate 11 treatment selection" data-photo-chips="11">
+            <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
+            <button type="button" class="chip" data-treatment="red-mass" aria-pressed="true">RED MASS</button>
+            <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
+            <button type="button" class="chip" data-treatment="halftone" aria-pressed="false">HALFTONE</button>
+            <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+          </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              Blue-noise dither in dark ink under multiply, landing on the red mass and the deeper tones around it. The band excludes the brightest cyan, so the field the figure stands in comes through untouched.
+              A chasm interior: a red mass beside a brighter cyan field. The default multiplies blue-noise dither in dark ink into the red mass and the deeper tones around it, excluding the brightest cyan so the field the figure stands in comes through untouched. The alternates move the band to the highlights, resolve the same band as a halftone, or cover the full frame.
             </p>
             <pre class="plate-options" id="opts-11"></pre>
           </div>
@@ -870,7 +897,7 @@
 
         <!-- PLATE 12 — Heather (photograph) -->
         <section class="plate" id="plate-12" data-plate-index="12">
-          <p class="plate-label">PLATE 12 — HEATHER — PHOTOGRAPH — LINEAR 90DEG — 6PX</p>
+          <p class="plate-label">PLATE 12 — HEATHER — PHOTOGRAPH — LINEAR RAMP</p>
           <figure class="plate-frame plate-frame--photo">
             <div class="plate-slot" data-photo-target="12" style="aspect-ratio: 1100 / 1100">
               <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
@@ -880,9 +907,16 @@
             <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
             <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
           </figure>
+          <div class="chip-row" role="group" aria-label="Plate 12 treatment selection" data-photo-chips="12">
+            <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
+            <button type="button" class="chip" data-treatment="linear-ramp" aria-pressed="true">LINEAR RAMP</button>
+            <button type="button" class="chip" data-treatment="radial" aria-pressed="false">RADIAL</button>
+            <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
+            <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+          </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A positional mask: the field is the pixel's vertical position rather than its colour. The screen fades across the frame regardless of what the photograph contains.
+              A heather field, masked by position rather than colour in the default treatment: the mask field is the pixel's vertical position, so the screen fades across the frame regardless of what the photograph contains. The alternates swap the ramp for a radial falloff, gate on luminance instead of position, or drop the mask entirely.
             </p>
             <pre class="plate-options" id="opts-12"></pre>
           </div>
@@ -890,7 +924,7 @@
 
         <!-- PLATE 13 — Library (photograph) -->
         <section class="plate" id="plate-13" data-plate-index="13">
-          <p class="plate-label">PLATE 13 — LIBRARY — PHOTOGRAPH — 8×12 ASCII — SCREEN</p>
+          <p class="plate-label">PLATE 13 — LIBRARY — PHOTOGRAPH — ASCII</p>
           <figure class="plate-frame plate-frame--photo" style="max-width: 540px">
             <div class="plate-slot" data-photo-target="13" style="aspect-ratio: 823 / 1100">
               <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
@@ -900,9 +934,16 @@
             <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
             <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
           </figure>
+          <div class="chip-row" role="group" aria-label="Plate 13 treatment selection" data-photo-chips="13">
+            <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
+            <button type="button" class="chip" data-treatment="ascii" aria-pressed="true">ASCII</button>
+            <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
+            <button type="button" class="chip" data-treatment="shadow-dither" aria-pressed="false">SHADOW DITHER</button>
+            <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+          </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              ASCII at an 8×12 cell over the midtones. The mask resolves to the character cell, so no glyph is ever half-masked at the boundary.
+              A library interior. The default sets ASCII at an 8×12 cell over the midtones and highlights; the mask resolves to the character cell, so no glyph is ever half-masked at the boundary. The alternates trade glyphs for a negative halftone in the highlights, blue-noise dither confined to the shadows, or an unmasked full-frame screen.
             </p>
             <pre class="plate-options" id="opts-13"></pre>
           </div>
@@ -2144,70 +2185,274 @@ const GALLERY = [
  * Photographic plates. Sources are data URIs injected at build time as
  * window.__inkmaskImages[key]; if the injection has not run, each plate
  * degrades to a quiet "IMAGE PENDING" placeholder without throwing.
+ *
+ * Each plate carries a set of treatments, mirroring HERO_TREATMENTS. The
+ * "original" treatment has no options: the decoded photograph is drawn
+ * untouched so the treated versions can be compared against it.
  */
 const PHOTO_GALLERY = [
   {
     id: 9,
     key: "eclipse",
     name: "ECLIPSE",
-    label: "PLATE 09 — ECLIPSE — PHOTOGRAPH — 45DEG — 7PX — NEGATIVE",
-    options: {
-      effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
-      mask: { low: 0.35, high: 1, softness: 0.25 },
-      foreground: "#F0E2D0",
-      blend: "screen",
+    base: "PLATE 09 — ECLIPSE — PHOTOGRAPH",
+    defaultTreatment: "inverse-screen",
+    treatments: {
+      "original": {
+        label: "ORIGINAL",
+        original: true,
+        aria: "Plate 09 Eclipse: the source photograph, drawn untouched",
+      },
+      "inverse-screen": {
+        label: "INVERSE SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+          mask: { low: 0.35, high: 1, softness: 0.25 },
+          foreground: "#F0E2D0",
+          blend: "screen",
+        },
+        aria: "Plate 09 Eclipse: negative-polarity halftone opening along the lit crescent of a photograph",
+      },
+      "warm-ink": {
+        label: "WARM INK",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 15, polarity: "negative" },
+          mask: { low: 0.30, high: 1, softness: 0.28 },
+          foreground: "#C9855A",
+          blend: "screen",
+        },
+        aria: "Plate 09 Eclipse: warm-ink negative halftone screened over the lit crescent",
+      },
+      "ascii": {
+        label: "ASCII",
+        options: {
+          effect: { kind: "ascii", cellWidth: 7, cellHeight: 10 },
+          mask: { low: 0.32, high: 1, softness: 0.25 },
+          foreground: "#D8C6B4",
+          blend: "screen",
+        },
+        aria: "Plate 09 Eclipse: ASCII glyphs screened over the lit crescent of a photograph",
+      },
+      "full-frame": {
+        label: "FULL FRAME",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 45 },
+          mask: { low: 0, high: 1, softness: 0 },
+          foreground: "#0A0A0C",
+          background: "#EFEAE2",
+        },
+        aria: "Plate 09 Eclipse: full-frame dark-ink halftone on paper, no mask cutout",
+      },
     },
-    aria: "Plate 09 Eclipse: negative-polarity halftone opening along the lit crescent of a photograph",
   },
   {
     id: 10,
     key: "sphere",
     name: "SPHERE",
-    label: "PLATE 10 — SPHERE — PHOTOGRAPH — 15DEG — 6PX — FULL BAND",
-    options: {
-      effect: { kind: "halftone", cell: 6, angle: 15 },
-      mask: { low: 0, high: 1, softness: 0 },
-      foreground: "#141210",
+    base: "PLATE 10 — SPHERE — PHOTOGRAPH",
+    defaultTreatment: "full-screen",
+    treatments: {
+      "original": {
+        label: "ORIGINAL",
+        original: true,
+        aria: "Plate 10 Sphere: the source photograph, drawn untouched",
+      },
+      "full-screen": {
+        label: "FULL SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0, high: 1, softness: 0 },
+          foreground: "#141210",
+        },
+        aria: "Plate 10 Sphere: conventional full-frame halftone of a photograph, no mask cutout",
+      },
+      "inverse-screen": {
+        label: "INVERSE SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+          mask: { low: 0.50, high: 1, softness: 0.25 },
+          foreground: "#B8ACA8",
+          blend: "screen",
+        },
+        aria: "Plate 10 Sphere: negative-polarity halftone opening on the lit side of the sphere",
+      },
+      "highlights": {
+        label: "HIGHLIGHTS",
+        options: {
+          effect: { kind: "dither", matrix: "bayer8", scale: 2 },
+          mask: { low: 0.65, high: 1, softness: 0.20 },
+          foreground: "#1A1714",
+        },
+        aria: "Plate 10 Sphere: Bayer-8 dither confined to the brightest highlights",
+      },
+      "ascii": {
+        label: "ASCII",
+        options: {
+          effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+          mask: { low: 0.35, high: 1, softness: 0.20 },
+          foreground: "#8C8C8C",
+          blend: "screen",
+        },
+        aria: "Plate 10 Sphere: ASCII glyphs screened over the lit side of the sphere",
+      },
     },
-    aria: "Plate 10 Sphere: conventional full-frame halftone of a photograph, no mask cutout",
   },
   {
     id: 11,
     key: "chasm",
     name: "CHASM",
-    label: "PLATE 11 — CHASM — PHOTOGRAPH — BLUE NOISE 2× — MULTIPLY",
-    options: {
-      effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
-      mask: { low: 0, high: 0.60, softness: 0.14 },
-      foreground: "#0A2540",
-      blend: "multiply",
+    base: "PLATE 11 — CHASM — PHOTOGRAPH",
+    defaultTreatment: "red-mass",
+    treatments: {
+      "original": {
+        label: "ORIGINAL",
+        original: true,
+        aria: "Plate 11 Chasm: the source photograph, drawn untouched",
+      },
+      "red-mass": {
+        label: "RED MASS",
+        options: {
+          effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
+          mask: { low: 0, high: 0.60, softness: 0.14 },
+          foreground: "#0A2540",
+          blend: "multiply",
+        },
+        aria: "Plate 11 Chasm: dark blue-noise dither multiplied over saturated colour fields of a photograph",
+      },
+      "inverse-screen": {
+        label: "INVERSE SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 8, angle: 45, polarity: "negative" },
+          mask: { low: 0.80, high: 1, softness: 0.14 },
+          foreground: "#C8BEB2",
+          blend: "screen",
+        },
+        aria: "Plate 11 Chasm: negative-polarity halftone confined to the brightest cyan field",
+      },
+      "halftone": {
+        label: "HALFTONE",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 75 },
+          mask: { low: 0, high: 0.60, softness: 0.14 },
+          foreground: "#12233A",
+        },
+        aria: "Plate 11 Chasm: dark halftone resolving the same shadow band as the default dither",
+      },
+      "full-frame": {
+        label: "FULL FRAME",
+        options: {
+          effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
+          mask: { low: 0, high: 1, softness: 0 },
+          foreground: "#0A2540",
+          blend: "multiply",
+        },
+        aria: "Plate 11 Chasm: blue-noise dither multiplied over the whole frame, no mask cutout",
+      },
     },
-    aria: "Plate 11 Chasm: dark blue-noise dither multiplied over saturated colour fields of a photograph",
   },
   {
     id: 12,
     key: "heather",
     name: "HEATHER",
-    label: "PLATE 12 — HEATHER — PHOTOGRAPH — LINEAR 90DEG — 6PX",
-    options: {
-      effect: { kind: "halftone", cell: 6, angle: 75 },
-      mask: { source: "linear", angle: 90, low: 0, high: 0.45, softness: 0.30 },
-      foreground: "#2A1520",
+    base: "PLATE 12 — HEATHER — PHOTOGRAPH",
+    defaultTreatment: "linear-ramp",
+    treatments: {
+      "original": {
+        label: "ORIGINAL",
+        original: true,
+        aria: "Plate 12 Heather: the source photograph, drawn untouched",
+      },
+      "linear-ramp": {
+        label: "LINEAR RAMP",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 75 },
+          mask: { source: "linear", angle: 90, low: 0, high: 0.45, softness: 0.30 },
+          foreground: "#2A1520",
+        },
+        aria: "Plate 12 Heather: positional linear mask fading a halftone screen down a photograph",
+      },
+      "radial": {
+        label: "RADIAL",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 45 },
+          mask: { source: "radial", centerX: 0.20, centerY: 0.75, low: 0, high: 0.50, softness: 0.30 },
+          foreground: "#2A1520",
+        },
+        aria: "Plate 12 Heather: positional radial mask fading a halftone screen out from the lower left",
+      },
+      "inverse-screen": {
+        label: "INVERSE SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+          mask: { low: 0.65, high: 1, softness: 0.20 },
+          foreground: "#B9A8A0",
+          blend: "screen",
+        },
+        aria: "Plate 12 Heather: negative-polarity halftone gated on the photograph's highlights",
+      },
+      "full-frame": {
+        label: "FULL FRAME",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0, high: 1, softness: 0 },
+          foreground: "#24121C",
+        },
+        aria: "Plate 12 Heather: full-frame dark-ink halftone, no mask cutout",
+      },
     },
-    aria: "Plate 12 Heather: positional linear mask fading a halftone screen down a photograph",
   },
   {
     id: 13,
     key: "library",
     name: "LIBRARY",
-    label: "PLATE 13 — LIBRARY — PHOTOGRAPH — 8×12 ASCII — SCREEN",
-    options: {
-      effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
-      mask: { low: 0.40, high: 1, softness: 0.20 },
-      foreground: "#8FA6BC",
-      blend: "screen",
+    base: "PLATE 13 — LIBRARY — PHOTOGRAPH",
+    defaultTreatment: "ascii",
+    treatments: {
+      "original": {
+        label: "ORIGINAL",
+        original: true,
+        aria: "Plate 13 Library: the source photograph, drawn untouched",
+      },
+      "ascii": {
+        label: "ASCII",
+        options: {
+          effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+          mask: { low: 0.40, high: 1, softness: 0.20 },
+          foreground: "#8FA6BC",
+          blend: "screen",
+        },
+        aria: "Plate 13 Library: ASCII glyphs screened over the midtones of a photographed interior",
+      },
+      "inverse-screen": {
+        label: "INVERSE SCREEN",
+        options: {
+          effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+          mask: { low: 0.50, high: 1, softness: 0.20 },
+          foreground: "#AEC4DA",
+          blend: "screen",
+        },
+        aria: "Plate 13 Library: negative-polarity halftone opening on the interior's brightest passages",
+      },
+      "shadow-dither": {
+        label: "SHADOW DITHER",
+        options: {
+          effect: { kind: "dither", matrix: "blueNoise" },
+          mask: { low: 0, high: 0.28, softness: 0.10 },
+          foreground: "#0B1420",
+          blend: "multiply",
+        },
+        aria: "Plate 13 Library: blue-noise dither multiplied into the interior's shadows",
+      },
+      "full-frame": {
+        label: "FULL FRAME",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0, high: 1, softness: 0 },
+          foreground: "#0A1018",
+        },
+        aria: "Plate 13 Library: full-frame dark-ink halftone, no mask cutout",
+      },
     },
-    aria: "Plate 13 Library: ASCII glyphs screened over the midtones of a photographed interior",
   },
 ];
 
@@ -2507,7 +2752,9 @@ function renderHero(inkmask) {
 }
 
 function initHeroChips(inkmask) {
-  const chips = document.querySelectorAll(".chip");
+  // Scoped to the hero plate — the photographic plates have chip rows of
+  // their own, wired separately in initPhotoChips.
+  const chips = document.querySelectorAll("#plate-00 .chip");
   chips.forEach((chip) => {
     chip.addEventListener("click", () => {
       const key = chip.getAttribute("data-treatment");
@@ -2527,9 +2774,14 @@ function initHeroChips(inkmask) {
 /* ---------- gallery lazy render ---------- */
 
 function fillOptionsDisplay() {
-  for (const plate of GALLERY.concat(PHOTO_GALLERY)) {
+  for (const plate of GALLERY) {
     const el = document.getElementById("opts-" + pad2(plate.id));
     if (el) el.textContent = formatOptions(plate.options);
+  }
+  for (const plate of PHOTO_GALLERY) {
+    const el = document.getElementById("opts-" + pad2(plate.id));
+    const treatment = plate.treatments[plate.defaultTreatment];
+    if (el && treatment) el.textContent = formatOptions(treatment.options);
   }
 }
 
@@ -2562,52 +2814,158 @@ function renderGalleryPlate(inkmask, plate) {
   }
 }
 
+/* ---------- photographic plates: per-plate treatment state ---------- */
+
+const photoStates = Object.create(null);
+
+function photoState(plate) {
+  let state = photoStates[plate.id];
+  if (!state) {
+    state = { active: plate.defaultTreatment, img: null, busy: false };
+    photoStates[plate.id] = state;
+  }
+  return state;
+}
+
+/** Resolve after the next frame has painted (double rAF). */
+function nextPaint() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+/** Draw the decoded photograph untouched — no effect, no mask. */
+function drawOriginal(img) {
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  canvas.getContext("2d").drawImage(img, 0, 0);
+  return canvas;
+}
+
 /**
- * Photographic plate: decode the injected data URI, then run the identical
- * render + computeGate path the gradient plates use. Degrades quietly when
- * the build has not injected window.__inkmaskImages.
+ * Photographic plate: decode the injected data URI once, then run the
+ * identical render + measureStats path the hero uses for the requested
+ * treatment. Shows the RENDERING… placeholder and disables the plate's
+ * chip row while working; a failure restores the previous view and chips
+ * rather than leaving the plate stuck. Degrades quietly when the build
+ * has not injected window.__inkmaskImages.
  */
-async function renderPhotoPlate(inkmask, plate) {
+async function renderPhotoPlate(inkmask, plate, treatmentKey) {
   const slot = document.querySelector(
     '[data-photo-target="' + plate.id + '"]',
   );
-  if (!slot || slot.dataset.done === "1") return;
+  const treatment = plate.treatments[treatmentKey];
+  const state = photoState(plate);
+  if (!slot || !treatment || state.busy) return;
+
+  const row = document.querySelector('[data-photo-chips="' + plate.id + '"]');
+  const chips = row ? Array.from(row.querySelectorAll(".chip")) : [];
 
   const images = window.__inkmaskImages;
   const dataUri = images ? images[plate.key] : undefined;
   if (typeof dataUri !== "string") {
     const ph = slot.querySelector(".plate-placeholder");
     if (ph) ph.textContent = "IMAGE PENDING";
+    chips.forEach((c) => { c.disabled = true; });
     return;
   }
-  slot.dataset.done = "1";
 
-  const img = new Image();
-  img.src = dataUri;
+  state.busy = true;
+  chips.forEach((c) => { c.disabled = true; });
+
+  // Keep the previous canvas (if any) so a failure can restore it.
+  const prevCanvas = slot.querySelector("canvas");
+  slot.innerHTML =
+    '<span class="plate-placeholder" aria-hidden="true">RENDERING…</span>';
+
   try {
-    await img.decode();
-  } catch {
-    delete slot.dataset.done;
-    const ph = slot.querySelector(".plate-placeholder");
-    if (ph) ph.textContent = "IMAGE FAILED";
-    return;
+    if (!state.img) {
+      const img = new Image();
+      img.src = dataUri;
+      await img.decode();
+      state.img = img;
+    }
+
+    // Let the placeholder paint before the synchronous render work.
+    await nextPaint();
+
+    const labelEl = document.querySelector(
+      "#plate-" + pad2(plate.id) + " .plate-label",
+    );
+    const optsEl = document.getElementById("opts-" + pad2(plate.id));
+
+    if (treatment.original) {
+      placeCanvas(slot, drawOriginal(state.img), treatment.aria);
+      if (labelEl) {
+        labelEl.textContent = plate.base + " — ORIGINAL · NO MASK";
+      }
+      if (optsEl) {
+        optsEl.textContent =
+          "source photograph drawn unmodified — no effect, no mask";
+      }
+    } else {
+      const out = inkmask.render(state.img, treatment.options);
+      placeCanvas(slot, out, treatment.aria);
+
+      // Live coverage figures — same measureStats path as the hero readout.
+      const stats = measureStats(inkmask, state.img, treatment.options);
+      if (labelEl) {
+        labelEl.textContent =
+          plate.base +
+          " — " +
+          treatment.label +
+          " · GATED " +
+          stats.gatedPct.toFixed(1) +
+          "% · CHANGED " +
+          stats.changedPct.toFixed(1) +
+          "%";
+      }
+      if (optsEl) optsEl.textContent = formatOptions(treatment.options);
+    }
+
+    state.active = treatmentKey;
+    chips.forEach((c) => {
+      c.setAttribute(
+        "aria-pressed",
+        c.getAttribute("data-treatment") === treatmentKey ? "true" : "false",
+      );
+    });
+    slot.dataset.done = "1";
+  } catch (err) {
+    console.error(
+      "photo plate " + plate.id + " (" + treatmentKey + ") failed:",
+      err,
+    );
+    // Never leave the plate stuck on RENDERING… — restore what was there.
+    if (prevCanvas) {
+      slot.innerHTML = "";
+      slot.appendChild(prevCanvas);
+    } else {
+      const ph = slot.querySelector(".plate-placeholder");
+      if (ph) ph.textContent = "RENDER FAILED";
+    }
+  } finally {
+    state.busy = false;
+    chips.forEach((c) => { c.disabled = false; });
   }
+}
 
-  const out = inkmask.render(img, plate.options);
-  placeCanvas(slot, out, plate.aria);
-
-  // Live coverage figure — same computeGate path as the gradient plates.
-  const src = inkmask.toPixels(img);
-  const { gate } = inkmask.computeGate(src, plate.options);
-  let gated = 0;
-  for (let i = 0; i < gate.length; i++) gated += gate[i];
-  const gatedPct = (gated / gate.length) * 100;
-  const labelEl = document.querySelector(
-    "#plate-" + pad2(plate.id) + " .plate-label",
-  );
-  if (labelEl && plate.label) {
-    labelEl.textContent =
-      plate.label + " · GATED " + gatedPct.toFixed(1) + "%";
+function initPhotoChips(inkmask) {
+  for (const plate of PHOTO_GALLERY) {
+    const row = document.querySelector(
+      '[data-photo-chips="' + plate.id + '"]',
+    );
+    if (!row) continue;
+    row.querySelectorAll(".chip").forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const key = chip.getAttribute("data-treatment");
+        if (!key || !plate.treatments[key]) return;
+        renderPhotoPlate(inkmask, plate, key).catch((err) => {
+          console.error("photo plate " + plate.id + " failed:", err);
+        });
+      });
+    });
   }
 }
 
@@ -2622,12 +2980,16 @@ function initLazyGallery(inkmask) {
         const photoId = entry.target.getAttribute("data-photo-target");
         if (photoId !== null) {
           const photo = PHOTO_GALLERY.find((p) => p.id === Number(photoId));
-          if (photo) {
+          // dataset.done guards the first render only; chip clicks re-render
+          // deliberately through their own path.
+          if (photo && entry.target.dataset.done !== "1") {
             // Yield so UI can paint the placeholder first
             requestAnimationFrame(() => {
-              renderPhotoPlate(inkmask, photo).catch((err) => {
-                console.error("photo plate " + photo.id + " failed:", err);
-              });
+              renderPhotoPlate(inkmask, photo, photoState(photo).active).catch(
+                (err) => {
+                  console.error("photo plate " + photo.id + " failed:", err);
+                },
+              );
             });
           }
         } else {
@@ -2675,6 +3037,7 @@ async function main() {
 
   renderHero(inkmask);
   initHeroChips(inkmask);
+  initPhotoChips(inkmask);
   initLazyGallery(inkmask);
 
   let resizeTimer = null;
