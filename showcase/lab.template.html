@@ -570,6 +570,7 @@
         <div class="chip-row" role="group" aria-label="Presets" id="preset-row">
           <button type="button" class="chip" data-preset="Masked print" aria-pressed="false">Masked print</button>
           <button type="button" class="chip" data-preset="Inverse screen" aria-pressed="false">Inverse screen</button>
+          <button type="button" class="chip" data-preset="Warm ink" aria-pressed="false">Warm ink</button>
           <button type="button" class="chip" data-preset="Full print" aria-pressed="false">Full print</button>
           <button type="button" class="chip" data-preset="Shadow dither" aria-pressed="false">Shadow dither</button>
           <button type="button" class="chip" data-preset="Linear dissolve" aria-pressed="false">Linear dissolve</button>
@@ -837,6 +838,12 @@ const PRESETS = {
     effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
     mask: { low: 0.50, high: 1, softness: 0.25 },
     foreground: "#B8ACA8",
+    blend: "screen",
+  },
+  "Warm ink": {
+    effect: { kind: "halftone", cell: 7, angle: 15, polarity: "negative" },
+    mask: { low: 0.45, high: 1, softness: 0.20 },
+    foreground: "#C9855A",
     blend: "screen",
   },
   "Full print": {
