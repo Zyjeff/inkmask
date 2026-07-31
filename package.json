@@ -21,6 +21,7 @@
     "fixtures": "node scripts/render-fixtures.mjs",
     "example": "node scripts/serve.mjs",
     "showcase": "npm run build && node scripts/build-showcase.mjs",
+    "lab": "npm run showcase && node scripts/serve.mjs",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": { "react": ">=18" },

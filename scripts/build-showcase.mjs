@@ -4,13 +4,27 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const distDir = join(root, "dist");
-const templatePath = join(root, "showcase", "showcase.html");
-const outPath = join(root, "showcase", "index.html");
 const imagesDir = join(root, "showcase", "src");
 
 const BUNDLE_MARKER = "<!--INKMASK_BUNDLE-->";
 const IMAGES_MARKER = "<!--INKMASK_IMAGES-->";
 const EXPECTED_JPG_COUNT = 5;
+
+/** Both pages get the same image + bundle injections. */
+const PAGES = [
+  {
+    templateName: "showcase/showcase.html",
+    templatePath: join(root, "showcase", "showcase.html"),
+    outName: "showcase/index.html",
+    outPath: join(root, "showcase", "index.html"),
+  },
+  {
+    templateName: "showcase/lab.template.html",
+    templatePath: join(root, "showcase", "lab.template.html"),
+    outName: "showcase/lab.html",
+    outPath: join(root, "showcase", "lab.html"),
+  },
+];
 
 /** Built modules in dependency order (types/react omitted). */
 const MODULES = [
@@ -55,22 +69,25 @@ function stripModuleSyntax(source) {
   return code;
 }
 
-if (!existsSync(templatePath)) {
-  throw new Error(
-    `showcase/showcase.html not found. Create the hand-authored template first, then re-run this script.`,
-  );
-}
-
-const template = readFileSync(templatePath, "utf8");
-if (!template.includes(BUNDLE_MARKER)) {
-  throw new Error(
-    `Marker ${BUNDLE_MARKER} not found in showcase/showcase.html. The template must contain exactly that placeholder.`,
-  );
-}
-if (!template.includes(IMAGES_MARKER)) {
-  throw new Error(
-    `Marker ${IMAGES_MARKER} not found in showcase/showcase.html. The template must contain exactly that placeholder.`,
-  );
+// Validate every template up front so a broken page fails the whole build
+// before anything is written.
+for (const page of PAGES) {
+  if (!existsSync(page.templatePath)) {
+    throw new Error(
+      `${page.templateName} not found. Create the hand-authored template first, then re-run this script.`,
+    );
+  }
+  page.template = readFileSync(page.templatePath, "utf8");
+  if (!page.template.includes(BUNDLE_MARKER)) {
+    throw new Error(
+      `Marker ${BUNDLE_MARKER} not found in ${page.templateName}. The template must contain exactly that placeholder.`,
+    );
+  }
+  if (!page.template.includes(IMAGES_MARKER)) {
+    throw new Error(
+      `Marker ${IMAGES_MARKER} not found in ${page.templateName}. The template must contain exactly that placeholder.`,
+    );
+  }
 }
 
 if (!existsSync(imagesDir)) {
@@ -121,17 +138,18 @@ const expose =
 
 const scriptBlock = `<script type="module">\n${bundleBody}\n\n${expose}\n</script>`;
 
-// Images must be injected before the bundle so the page script can rely on both.
-let page = template.replace(IMAGES_MARKER, imagesScript);
-page = page.replace(BUNDLE_MARKER, scriptBlock);
-
-writeFileSync(outPath, page, "utf8");
-
 const bundleBytes = Buffer.byteLength(bundleBody, "utf8");
-const pageBytes = Buffer.byteLength(page, "utf8");
 const imagesKb = (imagesEncodedBytes / 1024).toFixed(1);
 console.log(
-  `Inlined ${Object.keys(imageMap).length} images (${imagesKb} KB encoded)`,
+  `Inlined ${Object.keys(imageMap).length} images (${imagesKb} KB encoded) into each page`,
 );
-console.log(`Injected bundle: ${bundleBytes} bytes`);
-console.log(`Wrote ${outPath} (${pageBytes} bytes)`);
+console.log(`Injected bundle: ${bundleBytes} bytes into each page`);
+
+for (const page of PAGES) {
+  // Images must be injected before the bundle so the page script can rely on both.
+  let html = page.template.replace(IMAGES_MARKER, imagesScript);
+  html = html.replace(BUNDLE_MARKER, scriptBlock);
+  writeFileSync(page.outPath, html, "utf8");
+  const pageBytes = Buffer.byteLength(html, "utf8");
+  console.log(`Wrote ${page.outPath} (${pageBytes} bytes)`);
+}

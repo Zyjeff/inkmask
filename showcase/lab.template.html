@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>inkmask — lab</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --paper: #D6D8D6;
+      --well: #C9CCC9;
+      --ink: #131614;
+      --ink-2: #565B57;
+      --rule: rgba(19, 22, 20, 0.16);
+      --accent: #0090C8;
+
+      --display: "Franklin Gothic Medium", "Franklin Gothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --body: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      --mono: Consolas, "SF Mono", Menlo, "Courier New", monospace;
+
+      --panel-w: 340px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #101210;
+        --well: #191C1A;
+        --ink: #E6E8E5;
+        --ink-2: #9AA09B;
+        --rule: rgba(230, 232, 229, 0.14);
+        --accent: #33C2F0;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --paper: #101210;
+      --well: #191C1A;
+      --ink: #E6E8E5;
+      --ink-2: #9AA09B;
+      --rule: rgba(230, 232, 229, 0.14);
+      --accent: #33C2F0;
+    }
+
+    :root[data-theme="light"] {
+      --paper: #D6D8D6;
+      --well: #C9CCC9;
+      --ink: #131614;
+      --ink-2: #565B57;
+      --rule: rgba(19, 22, 20, 0.16);
+      --accent: #0090C8;
+    }
+
+    [hidden] { display: none !important; }
+
+    html {
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    body {
+      font-family: var(--body);
+      font-size: 17px;
+      line-height: 1.65;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      text-decoration-color: var(--accent);
+      text-underline-offset: 3px;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+
+    /* ---------- control panel (fixed left column) ---------- */
+    .panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--panel-w);
+      overflow-y: auto;
+      border-right: 1px solid var(--rule);
+      background: var(--paper);
+      padding: 28px 22px 56px;
+    }
+
+    .masthead {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .masthead-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: 40px;
+      font-weight: 500;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .theme-toggle {
+      flex-shrink: 0;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      background: transparent;
+      border: 1px solid var(--rule);
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--ink);
+      border-color: var(--ink-2);
+    }
+
+    .masthead-kicker {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .back-link {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      padding-top: 18px;
+      margin-top: 24px;
+      border-top: 1px solid var(--rule);
+    }
+
+    .panel-section > .section-label { margin-bottom: 12px; }
+
+    /* ---------- source picker ---------- */
+    .src-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .src-thumb {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 6px;
+      background: transparent;
+      border: 1px solid var(--rule);
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .src-thumb:hover {
+      color: var(--ink);
+      border-color: var(--ink-2);
+    }
+
+    .src-thumb[aria-pressed="true"] {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .src-thumb:disabled { opacity: 0.4; cursor: default; }
+
+    .src-img {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      aspect-ratio: 1;
+      background-color: var(--well);
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      font-size: 18px;
+      line-height: 1;
+      color: var(--ink-2);
+    }
+
+    /* ---------- chips (presets + actions) ---------- */
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-2);
+      background: transparent;
+      border: 1px solid var(--rule);
+      padding: 7px 10px;
+      cursor: pointer;
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .chip:hover {
+      color: var(--ink);
+      border-color: var(--ink-2);
+    }
+
+    .chip[aria-pressed="true"] {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* ---------- controls ---------- */
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      min-inline-size: 0;
+    }
+
+    fieldset:disabled { opacity: 0.4; }
+
+    .ctl { margin: 0 0 14px; }
+
+    .ctl-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .ctl-head label,
+    .ctl-check label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+    }
+
+    .ctl-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    .ctl.is-inert { opacity: 0.4; }
+
+    .ctl-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      line-height: 1.6;
+      color: var(--ink-2);
+      margin: 0 0 14px;
+    }
+
+    input[type="range"] {
+      display: block;
+      width: 100%;
+      accent-color: var(--accent);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    select,
+    input[type="text"] {
+      display: block;
+      width: 100%;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      background: var(--well);
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      padding: 6px 8px;
+    }
+
+    input[type="color"] {
+      display: block;
+      width: 100%;
+      height: 30px;
+      padding: 2px;
+      background: var(--well);
+      border: 1px solid var(--rule);
+      border-radius: 0;
+      cursor: pointer;
+    }
+
+    input[type="color"]:disabled { opacity: 0.4; cursor: default; }
+
+    .ctl-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctl-check input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ---------- stage (right column) ---------- */
+    .stage-col {
+      margin-left: var(--panel-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: clamp(16px, 3vw, 40px);
+    }
+
+    .stage-label {
+      align-self: flex-start;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage-frame {
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      background: var(--well);
+      border: 1px solid var(--rule);
+    }
+
+    .stage-slot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 340px;
+      padding: 14px;
+    }
+
+    .stage-slot canvas {
+      display: block;
+      max-width: 100%;
+      max-height: 74vh;
+      width: auto;
+      height: auto;
+    }
+
+    .stage-placeholder {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage-status {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 3;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      padding: 3px 7px;
+    }
+
+    /* registration crosses — four corners */
+    .reg {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.45;
+      color: var(--ink-2);
+    }
+
+    .reg svg { display: block; width: 12px; height: 12px; }
+
+    .reg--tl { top: 6px; left: 6px; }
+    .reg--tr { top: 6px; right: 6px; }
+    .reg--bl { bottom: 6px; left: 6px; }
+    .reg--br { bottom: 6px; right: 6px; }
+
+    .readout {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+    }
+
+    /* ---------- options output ---------- */
+    .options-block {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .options-well {
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      background: var(--well);
+      border: 1px solid var(--rule);
+      padding: 16px 18px;
+      overflow-x: auto;
+      white-space: pre;
+      max-width: 100%;
+    }
+
+    .options-hint {
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--ink-2);
+      max-width: 65ch;
+    }
+
+    .sheet-footer {
+      width: 100%;
+      max-width: 1100px;
+      padding: 28px 0 8px;
+      margin-top: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-2);
+      font-variant-numeric: tabular-nums;
+      border-top: 1px solid var(--rule);
+    }
+
+    /* ---------- reduced motion ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .chip, .theme-toggle, .src-thumb { transition: none; }
+    }
+
+    /* ---------- responsive: panel becomes a block above the stage ---------- */
+    @media (max-width: 899px) {
+      .panel {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow-y: visible;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+        padding: 20px 16px 32px;
+      }
+
+      .stage-col {
+        margin-left: 0;
+        padding: 20px 16px 32px;
+      }
+
+      .stage-slot canvas { max-height: 64vh; }
+
+      .page-title { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="lab">
+    <aside class="panel" aria-label="Lab controls">
+      <header class="masthead">
+        <div class="masthead-top">
+          <h1 class="page-title">inkmask lab</h1>
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle colour theme">THEME</button>
+        </div>
+        <p class="masthead-kicker">Every option · live · copy the result</p>
+        <a class="back-link" href="./index.html">&larr; Specimen sheet</a>
+      </header>
+
+      <section class="panel-section" aria-labelledby="sec-source">
+        <h2 class="section-label" id="sec-source">Source</h2>
+        <div class="src-row" role="group" aria-label="Source image">
+          <button type="button" class="src-thumb" id="src-eclipse" data-source="eclipse" aria-pressed="false">
+            <span class="src-img" aria-hidden="true"></span><span>eclipse</span>
+          </button>
+          <button type="button" class="src-thumb" id="src-sphere" data-source="sphere" aria-pressed="true">
+            <span class="src-img" aria-hidden="true"></span><span>sphere</span>
+          </button>
+          <button type="button" class="src-thumb" id="src-chasm" data-source="chasm" aria-pressed="false">
+            <span class="src-img" aria-hidden="true"></span><span>chasm</span>
+          </button>
+          <button type="button" class="src-thumb" id="src-heather" data-source="heather" aria-pressed="false">
+            <span class="src-img" aria-hidden="true"></span><span>heather</span>
+          </button>
+          <button type="button" class="src-thumb" id="src-library" data-source="library" aria-pressed="false">
+            <span class="src-img" aria-hidden="true"></span><span>library</span>
+          </button>
+          <button type="button" class="src-thumb" id="src-upload" data-source="upload" aria-pressed="false">
+            <span class="src-img" aria-hidden="true">+</span><span>Upload&hellip;</span>
+          </button>
+        </div>
+        <input type="file" id="file-input" class="visually-hidden" accept="image/*" aria-label="Upload a local image file" tabindex="-1" />
+        <p class="ctl-note" style="margin-top: 10px;">Uploads stay in this page. Nothing leaves the browser.</p>
+      </section>
+
+      <section class="panel-section" aria-labelledby="sec-presets">
+        <h2 class="section-label" id="sec-presets">Presets</h2>
+        <div class="chip-row" role="group" aria-label="Presets" id="preset-row">
+          <button type="button" class="chip" data-preset="Masked print" aria-pressed="false">Masked print</button>
+          <button type="button" class="chip" data-preset="Inverse screen" aria-pressed="false">Inverse screen</button>
+          <button type="button" class="chip" data-preset="Full print" aria-pressed="false">Full print</button>
+          <button type="button" class="chip" data-preset="Shadow dither" aria-pressed="false">Shadow dither</button>
+          <button type="button" class="chip" data-preset="Linear dissolve" aria-pressed="false">Linear dissolve</button>
+          <button type="button" class="chip" data-preset="Radial dissolve" aria-pressed="false">Radial dissolve</button>
+          <button type="button" class="chip" data-preset="ASCII terminal" aria-pressed="false">ASCII terminal</button>
+          <button type="button" class="chip" data-preset="Original" aria-pressed="false">Original</button>
+        </div>
+      </section>
+
+      <section class="panel-section" aria-labelledby="sec-effect">
+        <h2 class="section-label" id="sec-effect">Effect</h2>
+        <div class="ctl" id="ctl-effect-kind">
+          <div class="ctl-head"><label for="effect-kind">Kind</label></div>
+          <select id="effect-kind">
+            <option value="dither">dither</option>
+            <option value="halftone">halftone</option>
+            <option value="ascii">ascii</option>
+            <option value="none">none — original</option>
+          </select>
+        </div>
+
+        <div id="group-dither">
+          <div class="ctl" id="ctl-dither-matrix">
+            <div class="ctl-head"><label for="dither-matrix">Matrix</label></div>
+            <select id="dither-matrix">
+              <option value="bayer2">bayer2</option>
+              <option value="bayer4">bayer4</option>
+              <option value="bayer8">bayer8</option>
+              <option value="blueNoise">blueNoise</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-dither-levels">
+            <div class="ctl-head"><label for="dither-levels">Levels</label><span class="ctl-val" id="dither-levels-val">2</span></div>
+            <input type="range" id="dither-levels" min="2" max="8" step="1" value="2" title="Applies when colour mode is source — mono ink is always flat" />
+          </div>
+          <div class="ctl" id="ctl-dither-scale">
+            <div class="ctl-head"><label for="dither-scale">Scale</label><span class="ctl-val" id="dither-scale-val">1</span></div>
+            <input type="range" id="dither-scale" min="1" max="8" step="1" value="1" />
+          </div>
+          <div class="ctl" id="ctl-dither-color">
+            <div class="ctl-head"><label for="dither-color">Colour mode</label></div>
+            <select id="dither-color">
+              <option value="mono">mono</option>
+              <option value="source">source</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="group-halftone" hidden>
+          <div class="ctl" id="ctl-halftone-cell">
+            <div class="ctl-head"><label for="halftone-cell">Cell</label><span class="ctl-val" id="halftone-cell-val">6</span></div>
+            <input type="range" id="halftone-cell" min="2" max="24" step="1" value="6" />
+          </div>
+          <div class="ctl" id="ctl-halftone-angle">
+            <div class="ctl-head"><label for="halftone-angle">Angle</label><span class="ctl-val" id="halftone-angle-val">45</span></div>
+            <input type="range" id="halftone-angle" min="0" max="90" step="1" value="45" />
+          </div>
+          <div class="ctl" id="ctl-halftone-shape">
+            <div class="ctl-head"><label for="halftone-shape">Shape</label></div>
+            <select id="halftone-shape">
+              <option value="circle">circle</option>
+              <option value="square">square</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-halftone-polarity">
+            <div class="ctl-head"><label for="halftone-polarity">Polarity</label></div>
+            <select id="halftone-polarity">
+              <option value="positive">positive</option>
+              <option value="negative">negative</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-halftone-color">
+            <div class="ctl-head"><label for="halftone-color">Colour mode</label></div>
+            <select id="halftone-color">
+              <option value="mono">mono</option>
+              <option value="source">source</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="group-ascii" hidden>
+          <div class="ctl" id="ctl-ascii-cellw">
+            <div class="ctl-head"><label for="ascii-cellw">Cell width</label><span class="ctl-val" id="ascii-cellw-val">8</span></div>
+            <input type="range" id="ascii-cellw" min="4" max="24" step="1" value="8" />
+          </div>
+          <div class="ctl" id="ctl-ascii-cellh">
+            <div class="ctl-head"><label for="ascii-cellh">Cell height</label><span class="ctl-val" id="ascii-cellh-val">12</span></div>
+            <input type="range" id="ascii-cellh" min="4" max="32" step="1" value="12" />
+          </div>
+          <div class="ctl" id="ctl-ascii-ramp">
+            <div class="ctl-head"><label for="ascii-ramp">Ramp — dark to light</label></div>
+            <input type="text" id="ascii-ramp" spellcheck="false" autocomplete="off" />
+          </div>
+          <div class="ctl" id="ctl-ascii-font">
+            <div class="ctl-head"><label for="ascii-font">Font</label></div>
+            <input type="text" id="ascii-font" spellcheck="false" autocomplete="off" />
+          </div>
+          <div class="ctl" id="ctl-ascii-color">
+            <div class="ctl-head"><label for="ascii-color">Colour mode</label></div>
+            <select id="ascii-color">
+              <option value="mono">mono</option>
+              <option value="source">source</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="ctl-note" id="original-note" hidden>Source drawn untouched — mask and composite are inactive.</p>
+      </section>
+
+      <section class="panel-section" aria-labelledby="sec-mask">
+        <h2 class="section-label" id="sec-mask">Mask</h2>
+        <fieldset id="mask-fieldset">
+          <legend class="visually-hidden">Mask options</legend>
+          <div class="ctl" id="ctl-mask-source">
+            <div class="ctl-head"><label for="mask-source">Source field</label></div>
+            <select id="mask-source">
+              <option value="luminance">luminance</option>
+              <option value="saturation">saturation</option>
+              <option value="gradient">gradient</option>
+              <option value="linear">linear</option>
+              <option value="radial">radial</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-mask-space">
+            <div class="ctl-head"><label for="mask-space">Space</label></div>
+            <select id="mask-space" title="Applies to the luminance source only">
+              <option value="srgb">srgb</option>
+              <option value="linear">linear</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-mask-angle" hidden>
+            <div class="ctl-head"><label for="mask-angle">Ramp angle</label><span class="ctl-val" id="mask-angle-val">0</span></div>
+            <input type="range" id="mask-angle" min="0" max="360" step="1" value="0" />
+          </div>
+          <div class="ctl" id="ctl-mask-cx" hidden>
+            <div class="ctl-head"><label for="mask-cx">Center X</label><span class="ctl-val" id="mask-cx-val">0.50</span></div>
+            <input type="range" id="mask-cx" min="0" max="1" step="0.01" value="0.5" />
+          </div>
+          <div class="ctl" id="ctl-mask-cy" hidden>
+            <div class="ctl-head"><label for="mask-cy">Center Y</label><span class="ctl-val" id="mask-cy-val">0.50</span></div>
+            <input type="range" id="mask-cy" min="0" max="1" step="0.01" value="0.5" />
+          </div>
+          <div class="ctl" id="ctl-mask-low">
+            <div class="ctl-head"><label for="mask-low">Low</label><span class="ctl-val" id="mask-low-val">0.00</span></div>
+            <input type="range" id="mask-low" min="0" max="1" step="0.01" value="0" />
+          </div>
+          <div class="ctl" id="ctl-mask-high">
+            <div class="ctl-head"><label for="mask-high">High</label><span class="ctl-val" id="mask-high-val">0.45</span></div>
+            <input type="range" id="mask-high" min="0" max="1" step="0.01" value="0.45" />
+          </div>
+          <div class="ctl" id="ctl-mask-softness">
+            <div class="ctl-head"><label for="mask-softness">Softness</label><span class="ctl-val" id="mask-softness-val">0.08</span></div>
+            <input type="range" id="mask-softness" min="0" max="1" step="0.01" value="0.08" />
+          </div>
+          <div class="ctl ctl-check" id="ctl-mask-invert">
+            <input type="checkbox" id="mask-invert" />
+            <label for="mask-invert">Invert band</label>
+          </div>
+          <div class="ctl" id="ctl-mask-dither">
+            <div class="ctl-head"><label for="mask-dither">Edge dither</label></div>
+            <select id="mask-dither">
+              <option value="bayer2">bayer2</option>
+              <option value="bayer4">bayer4</option>
+              <option value="bayer8">bayer8</option>
+              <option value="blueNoise">blueNoise</option>
+            </select>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="panel-section" aria-labelledby="sec-composite">
+        <h2 class="section-label" id="sec-composite">Composite</h2>
+        <fieldset id="composite-fieldset">
+          <legend class="visually-hidden">Composite options</legend>
+          <div class="ctl" id="ctl-blend">
+            <div class="ctl-head"><label for="blend">Blend</label></div>
+            <select id="blend">
+              <option value="normal">normal</option>
+              <option value="multiply">multiply</option>
+              <option value="screen">screen</option>
+              <option value="overlay">overlay</option>
+            </select>
+          </div>
+          <div class="ctl" id="ctl-opacity">
+            <div class="ctl-head"><label for="opacity">Opacity</label><span class="ctl-val" id="opacity-val">1.00</span></div>
+            <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
+          </div>
+          <div class="ctl" id="ctl-foreground">
+            <div class="ctl-head"><label for="foreground">Foreground</label><span class="ctl-val" id="foreground-val">#000000</span></div>
+            <input type="color" id="foreground" value="#000000" />
+          </div>
+          <div class="ctl ctl-check" id="ctl-paper-transparent">
+            <input type="checkbox" id="paper-transparent" checked />
+            <label for="paper-transparent">Transparent paper</label>
+          </div>
+          <div class="ctl" id="ctl-background">
+            <div class="ctl-head"><label for="background">Background</label><span class="ctl-val" id="background-val">—</span></div>
+            <input type="color" id="background" value="#FFFFFF" disabled />
+          </div>
+        </fieldset>
+      </section>
+    </aside>
+
+    <main class="stage-col">
+      <p class="stage-label" id="stage-label">Lab plate — sphere</p>
+      <figure class="stage-frame">
+        <div class="stage-slot" id="stage-slot">
+          <span class="stage-placeholder" aria-hidden="true">RENDERING&hellip;</span>
+        </div>
+        <span class="stage-status" id="stage-status" hidden>RENDERING&hellip;</span>
+        <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+        <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+        <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+        <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+      </figure>
+      <p class="readout" id="readout" aria-live="polite">GATED — · CHANGED — · —MS · —</p>
+      <div class="chip-row" role="group" aria-label="Output actions">
+        <button type="button" class="chip" id="btn-download">Download PNG</button>
+        <button type="button" class="chip" id="btn-copy">Copy options</button>
+        <button type="button" class="chip" id="btn-reset">Reset</button>
+      </div>
+      <section class="options-block" aria-labelledby="sec-options">
+        <h2 class="section-label" id="sec-options" style="margin-top: 8px;">Options — copy into your code</h2>
+        <pre class="options-well" id="options-json">{}</pre>
+        <p class="options-hint">
+          This object is the whole point: pass it to <code>applyInkmask</code>, <code>render</code>,
+          or the React component and you get exactly the plate above. Only values that differ from
+          the library defaults are included.
+        </p>
+      </section>
+      <footer class="sheet-footer">
+        inkmask lab · process cyan for interactive state only · uploads never leave the page
+      </footer>
+    </main>
+  </div>
+
+<!--INKMASK_IMAGES-->
+<!--INKMASK_BUNDLE-->
+<script type="module">
+/**
+ * Lab page logic. Runs after the injected bundle; polls briefly for
+ * window.inkmask, and degrades to a quiet BUNDLE PENDING placeholder when
+ * the template is opened without running the build.
+ */
+
+window.__labReady = false;
+window.__labOptions = null;
+
+const SOURCE_ORDER = ["eclipse", "sphere", "chasm", "heather", "library"];
+
+const EFFECT_PARAMS = {
+  dither: ["matrix", "levels", "scale", "color"],
+  halftone: ["cell", "angle", "shape", "color", "polarity"],
+  ascii: ["cellWidth", "cellHeight", "ramp", "font", "color"],
+};
+
+/** Preset name → options. null means "Original": draw the source untouched. */
+const PRESETS = {
+  "Masked print": {
+    effect: { kind: "halftone", cell: 6, angle: 15 },
+    mask: { low: 0.50, high: 1, softness: 0.25 },
+    foreground: "#141210",
+  },
+  "Inverse screen": {
+    effect: { kind: "halftone", cell: 7, angle: 45, polarity: "negative" },
+    mask: { low: 0.50, high: 1, softness: 0.25 },
+    foreground: "#B8ACA8",
+    blend: "screen",
+  },
+  "Full print": {
+    effect: { kind: "halftone", cell: 6, angle: 15 },
+    mask: { low: 0, high: 1, softness: 0 },
+    foreground: "#141210",
+  },
+  "Shadow dither": {
+    effect: { kind: "dither", matrix: "blueNoise" },
+    mask: { low: 0, high: 0.28, softness: 0.10 },
+    foreground: "#0B1420",
+    blend: "multiply",
+  },
+  "Linear dissolve": {
+    effect: { kind: "halftone", cell: 6, angle: 75 },
+    mask: { source: "linear", angle: 90, low: 0, high: 0.45, softness: 0.30 },
+    foreground: "#2A1520",
+  },
+  "Radial dissolve": {
+    effect: { kind: "halftone", cell: 6, angle: 45 },
+    mask: { source: "radial", centerX: 0.5, centerY: 0.5, low: 0, high: 0.50, softness: 0.30 },
+    foreground: "#241018",
+  },
+  "ASCII terminal": {
+    effect: { kind: "ascii", cellWidth: 8, cellHeight: 12 },
+    mask: { low: 0.40, high: 1, softness: 0.20 },
+    foreground: "#8FA6BC",
+    blend: "screen",
+  },
+  "Original": null,
+};
+
+let ink = null;
+let state = null;
+let currentSourceKey = "sphere";
+let uploadPixels = null;
+const pixelCache = Object.create(null);
+let prevCanvas = null;
+let prevAria = "";
+let busy = false;
+let queued = false;
+let debounceTimer = null;
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function fmt(v, decimals) {
+  return decimals === 0 ? String(Math.round(v)) : Number(v).toFixed(decimals);
+}
+
+function round2(v) {
+  return Math.round(v * 100) / 100;
+}
+
+function waitForInkmask(timeoutMs = 4000, intervalMs = 40) {
+  return new Promise((resolve, reject) => {
+    if (window.inkmask && typeof window.inkmask.render === "function") {
+      resolve(window.inkmask);
+      return;
+    }
+    const start = performance.now();
+    const id = setInterval(() => {
+      if (window.inkmask && typeof window.inkmask.render === "function") {
+        clearInterval(id);
+        resolve(window.inkmask);
+        return;
+      }
+      if (performance.now() - start > timeoutMs) {
+        clearInterval(id);
+        reject(new Error("window.inkmask not available"));
+      }
+    }, intervalMs);
+  });
+}
+
+function nextPaint() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+}
+
+/* ---------- state ---------- */
+
+/** Fresh control state built from the library's own defaults. */
+function defaultState() {
+  const D = ink.DEFAULTS;
+  const E = ink.EFFECT_DEFAULTS;
+  return {
+    // "none" is the lab's Original mode: the source is drawn untouched.
+    effectKind: D.effect.kind,
+    dither: { ...E.dither },
+    halftone: { ...E.halftone },
+    ascii: { ...E.ascii },
+    mask: { ...D.mask },
+    blend: D.blend,
+    opacity: D.opacity,
+    foreground: D.foreground,
+    transparent: D.background === null,
+    background: D.background === null ? "#FFFFFF" : D.background,
+  };
+}
+
+/**
+ * Minimal options object: only values that differ from the library defaults.
+ * Inert values (a ramp angle while the source is luminance, say) are omitted
+ * so what you copy is exactly what shapes the render. Returns null in
+ * Original mode.
+ */
+function buildOptions() {
+  if (state.effectKind === "none") return null;
+  const D = ink.DEFAULTS;
+  const E = ink.EFFECT_DEFAULTS;
+  const out = {};
+
+  const kind = state.effectKind;
+  const defs = E[kind];
+  const eff = { kind };
+  for (const p of EFFECT_PARAMS[kind]) {
+    // `levels` only shapes the source-colour quantiser; in mono it is inert,
+    // so keep it out of the copied options.
+    if (kind === "dither" && p === "levels" && state.dither.color === "mono") continue;
+    if (state[kind][p] !== defs[p]) eff[p] = state[kind][p];
+  }
+  if (kind !== D.effect.kind || Object.keys(eff).length > 1) out.effect = eff;
+
+  const dm = D.mask;
+  const m = {};
+  const srcKind = state.mask.source;
+  if (srcKind !== dm.source) m.source = srcKind;
+  if (srcKind === "luminance" && state.mask.space !== dm.space) m.space = state.mask.space;
+  if (srcKind === "linear" && state.mask.angle !== dm.angle) m.angle = round2(state.mask.angle);
+  if (srcKind === "radial") {
+    if (round2(state.mask.centerX) !== dm.centerX) m.centerX = round2(state.mask.centerX);
+    if (round2(state.mask.centerY) !== dm.centerY) m.centerY = round2(state.mask.centerY);
+  }
+  if (round2(state.mask.low) !== dm.low) m.low = round2(state.mask.low);
+  if (round2(state.mask.high) !== dm.high) m.high = round2(state.mask.high);
+  if (round2(state.mask.softness) !== dm.softness) m.softness = round2(state.mask.softness);
+  if (state.mask.invert !== dm.invert) m.invert = state.mask.invert;
+  if (state.mask.dither !== dm.dither) m.dither = state.mask.dither;
+  if (Object.keys(m).length > 0) out.mask = m;
+
+  if (state.blend !== D.blend) out.blend = state.blend;
+  if (round2(state.opacity) !== D.opacity) out.opacity = round2(state.opacity);
+  if (state.foreground.toLowerCase() !== D.foreground.toLowerCase()) {
+    out.foreground = state.foreground;
+  }
+  if (!state.transparent) out.background = state.background;
+  return out;
+}
+
+function formatOptions(options) {
+  if (options === null) {
+    return "// original — the source drawn untouched, no options";
+  }
+  return JSON.stringify(options, null, 2).replace(/"([^"]+)":/g, "$1:");
+}
+
+/* ---------- control sync ---------- */
+
+function syncVisibility() {
+  const srcKind = state.mask.source;
+  $("ctl-mask-angle").hidden = srcKind !== "linear";
+  $("ctl-mask-cx").hidden = srcKind !== "radial";
+  $("ctl-mask-cy").hidden = srcKind !== "radial";
+  // `space` only affects the luminance source — make its inertness visible.
+  const spaceInert = srcKind !== "luminance";
+  $("mask-space").disabled = spaceInert;
+  $("ctl-mask-space").classList.toggle("is-inert", spaceInert);
+
+  // dither `levels` only affects colour mode "source" — flat mono ink
+  // ignores it, so show that instead of leaving a dead slider.
+  const levelsInert = state.dither.color === "mono";
+  $("dither-levels").disabled = levelsInert;
+  $("ctl-dither-levels").classList.toggle("is-inert", levelsInert);
+
+  const kind = state.effectKind;
+  $("group-dither").hidden = kind !== "dither";
+  $("group-halftone").hidden = kind !== "halftone";
+  $("group-ascii").hidden = kind !== "ascii";
+  $("original-note").hidden = kind !== "none";
+
+  const original = kind === "none";
+  $("mask-fieldset").disabled = original;
+  $("composite-fieldset").disabled = original;
+
+  $("background").disabled = state.transparent;
+  $("background-val").textContent = state.transparent
+    ? "—"
+    : state.background.toUpperCase();
+  $("foreground-val").textContent = state.foreground.toUpperCase();
+}
+
+/** Push every state value into its widget and value display. */
+function syncControls() {
+  $("mask-source").value = state.mask.source;
+  $("mask-space").value = state.mask.space;
+  $("mask-angle").value = String(state.mask.angle);
+  $("mask-angle-val").textContent = fmt(state.mask.angle, 0);
+  $("mask-cx").value = String(state.mask.centerX);
+  $("mask-cx-val").textContent = fmt(state.mask.centerX, 2);
+  $("mask-cy").value = String(state.mask.centerY);
+  $("mask-cy-val").textContent = fmt(state.mask.centerY, 2);
+  $("mask-low").value = String(state.mask.low);
+  $("mask-low-val").textContent = fmt(state.mask.low, 2);
+  $("mask-high").value = String(state.mask.high);
+  $("mask-high-val").textContent = fmt(state.mask.high, 2);
+  $("mask-softness").value = String(state.mask.softness);
+  $("mask-softness-val").textContent = fmt(state.mask.softness, 2);
+  $("mask-invert").checked = state.mask.invert;
+  $("mask-dither").value = state.mask.dither;
+
+  $("effect-kind").value = state.effectKind;
+  $("dither-matrix").value = state.dither.matrix;
+  $("dither-levels").value = String(state.dither.levels);
+  $("dither-levels-val").textContent = fmt(state.dither.levels, 0);
+  $("dither-scale").value = String(state.dither.scale);
+  $("dither-scale-val").textContent = fmt(state.dither.scale, 0);
+  $("dither-color").value = state.dither.color;
+  $("halftone-cell").value = String(state.halftone.cell);
+  $("halftone-cell-val").textContent = fmt(state.halftone.cell, 0);
+  $("halftone-angle").value = String(state.halftone.angle);
+  $("halftone-angle-val").textContent = fmt(state.halftone.angle, 0);
+  $("halftone-shape").value = state.halftone.shape;
+  $("halftone-polarity").value = state.halftone.polarity;
+  $("halftone-color").value = state.halftone.color;
+  $("ascii-cellw").value = String(state.ascii.cellWidth);
+  $("ascii-cellw-val").textContent = fmt(state.ascii.cellWidth, 0);
+  $("ascii-cellh").value = String(state.ascii.cellHeight);
+  $("ascii-cellh-val").textContent = fmt(state.ascii.cellHeight, 0);
+  $("ascii-ramp").value = state.ascii.ramp;
+  $("ascii-font").value = state.ascii.font;
+  $("ascii-color").value = state.ascii.color;
+
+  $("blend").value = state.blend;
+  $("opacity").value = String(state.opacity);
+  $("opacity-val").textContent = fmt(state.opacity, 2);
+  $("foreground").value = state.foreground;
+  $("paper-transparent").checked = state.transparent;
+  $("background").value = state.background;
+
+  syncVisibility();
+}
+
+function clearPresetPressed() {
+  document
+    .querySelectorAll("#preset-row .chip")
+    .forEach((c) => c.setAttribute("aria-pressed", "false"));
+}
+
+/* ---------- rendering ---------- */
+
+async function getSourcePixels() {
+  if (currentSourceKey === "upload") {
+    if (!uploadPixels) throw new Error("no uploaded image");
+    return uploadPixels;
+  }
+  let px = pixelCache[currentSourceKey];
+  if (!px) {
+    const images = window.__inkmaskImages || {};
+    const uri = images[currentSourceKey];
+    if (typeof uri !== "string") {
+      throw new Error("image not injected: " + currentSourceKey);
+    }
+    const img = new Image();
+    img.src = uri;
+    await img.decode();
+    px = ink.toPixels(img);
+    pixelCache[currentSourceKey] = px;
+  }
+  return px;
+}
+
+function pixelsToCanvas(px) {
+  const canvas = document.createElement("canvas");
+  canvas.width = px.width;
+  canvas.height = px.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const imageData = ctx.createImageData(px.width, px.height);
+  imageData.data.set(px.data);
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function placeCanvas(canvas, ariaLabel) {
+  const slot = $("stage-slot");
+  slot.innerHTML = "";
+  canvas.setAttribute("role", "img");
+  canvas.setAttribute("aria-label", ariaLabel);
+  slot.appendChild(canvas);
+}
+
+function stageAria(options) {
+  const src = currentSourceKey === "upload" ? "uploaded image" : currentSourceKey;
+  if (options === null) return "Lab render of " + src + ": source drawn untouched";
+  return "Lab render of " + src + ": " + state.effectKind + " effect, live options applied";
+}
+
+function updateStageLabel(options) {
+  const src = currentSourceKey === "upload" ? "UPLOAD" : currentSourceKey.toUpperCase();
+  const kind = options === null ? "ORIGINAL" : state.effectKind.toUpperCase();
+  $("stage-label").textContent = "LAB PLATE — " + src + " — " + kind;
+}
+
+/**
+ * Debounce ~120ms so dragging a slider stays responsive. __labReady drops
+ * synchronously at schedule time so a driving script can await the flip.
+ */
+function scheduleRender() {
+  window.__labReady = false;
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(doRender, 120);
+}
+
+async function doRender() {
+  if (busy) {
+    queued = true;
+    return;
+  }
+  busy = true;
+  $("stage-status").hidden = false;
+  try {
+    await nextPaint(); // let RENDERING… paint before the synchronous work
+    const src = await getSourcePixels();
+    const options = buildOptions();
+
+    const t0 = performance.now();
+    let pixels;
+    let gatedPct = null;
+    if (options === null) {
+      pixels = src;
+    } else {
+      // Gate exactly as the showcase does: computeGate on the source.
+      const { gate } = ink.computeGate(src, options);
+      let gatedCount = 0;
+      for (let i = 0; i < gate.length; i++) gatedCount += gate[i];
+      gatedPct = (gatedCount / gate.length) * 100;
+      pixels = ink.applyInkmask(src, options).pixels;
+    }
+    const ms = performance.now() - t0;
+
+    // Changed exactly as the showcase does: pixel comparison vs the source.
+    let changedPct = 0;
+    if (pixels !== src) {
+      let changed = 0;
+      const n = src.width * src.height;
+      for (let i = 0; i < n; i++) {
+        const o = i * 4;
+        if (
+          src.data[o] !== pixels.data[o] ||
+          src.data[o + 1] !== pixels.data[o + 1] ||
+          src.data[o + 2] !== pixels.data[o + 2] ||
+          src.data[o + 3] !== pixels.data[o + 3]
+        ) {
+          changed++;
+        }
+      }
+      changedPct = (changed / n) * 100;
+    }
+
+    const canvas = pixelsToCanvas(pixels);
+    const aria = stageAria(options);
+    placeCanvas(canvas, aria);
+    prevCanvas = canvas;
+    prevAria = aria;
+
+    $("readout").textContent =
+      (gatedPct === null ? "ORIGINAL" : "GATED " + gatedPct.toFixed(1) + "%") +
+      " · CHANGED " + changedPct.toFixed(1) + "%" +
+      " · " + ms.toFixed(0) + "MS" +
+      " · " + pixels.width + "×" + pixels.height;
+
+    $("options-json").textContent = formatOptions(options);
+    window.__labOptions = options;
+    updateStageLabel(options);
+  } catch (err) {
+    console.error("inkmask lab render failed:", err);
+    // Never leave the page stuck on RENDERING… — restore the previous view.
+    if (prevCanvas) placeCanvas(prevCanvas, prevAria);
+    $("readout").textContent = "RENDER FAILED — PREVIOUS VIEW KEPT · SEE CONSOLE";
+  } finally {
+    $("stage-status").hidden = true;
+    busy = false;
+    if (queued) {
+      queued = false;
+      doRender();
+    } else {
+      window.__labReady = true;
+    }
+  }
+}
+
+/* ---------- sources ---------- */
+
+function setSource(key) {
+  currentSourceKey = key;
+  document.querySelectorAll("[data-source]").forEach((btn) => {
+    btn.setAttribute(
+      "aria-pressed",
+      btn.getAttribute("data-source") === key ? "true" : "false",
+    );
+  });
+  scheduleRender();
+}
+
+function initSources() {
+  const images = window.__inkmaskImages || {};
+  document.querySelectorAll("[data-source]").forEach((btn) => {
+    const key = btn.getAttribute("data-source");
+    if (key !== "upload") {
+      const uri = images[key];
+      if (typeof uri === "string") {
+        btn.querySelector(".src-img").style.backgroundImage =
+          'url("' + uri + '")';
+      } else {
+        btn.disabled = true;
+      }
+      btn.addEventListener("click", () => setSource(key));
+    } else {
+      btn.addEventListener("click", () => {
+        // First click picks a file; once an upload exists, clicking re-selects
+        // it, and clicking again while active opens the picker to replace it.
+        if (uploadPixels && currentSourceKey !== "upload") setSource("upload");
+        else $("file-input").click();
+      });
+    }
+  });
+
+  $("file-input").addEventListener("change", () => {
+    const input = $("file-input");
+    const file = input.files && input.files[0];
+    if (!file) return;
+    // Unsettled from the moment a file is chosen — the decode is async, and
+    // a driving script must not read the stage before the new source lands.
+    window.__labReady = false;
+    const reader = new FileReader(); // local only — nothing leaves the page
+    reader.onload = async () => {
+      try {
+        const img = new Image();
+        img.src = String(reader.result);
+        await img.decode();
+        uploadPixels = ink.toPixels(img);
+        const mark = document.querySelector('[data-source="upload"] .src-img');
+        mark.textContent = "";
+        mark.style.backgroundImage = 'url("' + reader.result + '")';
+        setSource("upload");
+      } catch (err) {
+        console.error("upload decode failed:", err);
+        window.__labReady = true; // nothing rendered; the page is settled
+      }
+    };
+    reader.onerror = () => {
+      console.error("upload read failed:", reader.error);
+      window.__labReady = true;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------- presets ---------- */
+
+function applyPreset(name) {
+  const preset = PRESETS[name];
+  state = defaultState();
+  if (preset === null) {
+    state.effectKind = "none";
+  } else if (preset) {
+    if (preset.effect) {
+      const { kind, ...params } = preset.effect;
+      state.effectKind = kind;
+      Object.assign(state[kind], params);
+    }
+    if (preset.mask) Object.assign(state.mask, preset.mask);
+    if (preset.blend !== undefined) state.blend = preset.blend;
+    if (preset.opacity !== undefined) state.opacity = preset.opacity;
+    if (preset.foreground !== undefined) state.foreground = preset.foreground;
+    if (preset.background !== undefined) {
+      if (preset.background === null) {
+        state.transparent = true;
+      } else {
+        state.transparent = false;
+        state.background = preset.background;
+      }
+    }
+  }
+  syncControls();
+  scheduleRender();
+}
+
+function initPresets() {
+  document.querySelectorAll("#preset-row .chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const name = chip.getAttribute("data-preset");
+      if (!name || !(name in PRESETS)) return;
+      document.querySelectorAll("#preset-row .chip").forEach((c) => {
+        c.setAttribute("aria-pressed", c === chip ? "true" : "false");
+      });
+      applyPreset(name);
+    });
+  });
+}
+
+/* ---------- control wiring ---------- */
+
+function onManualChange() {
+  clearPresetPressed();
+  scheduleRender();
+}
+
+function bindRange(id, decimals, apply) {
+  const el = $(id);
+  const val = $(id + "-val");
+  el.addEventListener("input", () => {
+    const v = Number(el.value);
+    apply(v);
+    if (val) val.textContent = fmt(v, decimals);
+    onManualChange();
+  });
+}
+
+function bindSelect(id, apply) {
+  const el = $(id);
+  el.addEventListener("change", () => {
+    apply(el.value);
+    syncVisibility();
+    onManualChange();
+  });
+}
+
+function bindCheck(id, apply) {
+  const el = $(id);
+  el.addEventListener("change", () => {
+    apply(el.checked);
+    syncVisibility();
+    onManualChange();
+  });
+}
+
+function bindText(id, apply) {
+  const el = $(id);
+  el.addEventListener("input", () => {
+    apply(el.value);
+    onManualChange();
+  });
+}
+
+function initControls() {
+  bindSelect("mask-source", (v) => { state.mask.source = v; });
+  bindSelect("mask-space", (v) => { state.mask.space = v; });
+  bindRange("mask-angle", 0, (v) => { state.mask.angle = v; });
+  bindRange("mask-cx", 2, (v) => { state.mask.centerX = v; });
+  bindRange("mask-cy", 2, (v) => { state.mask.centerY = v; });
+  bindRange("mask-low", 2, (v) => { state.mask.low = v; });
+  bindRange("mask-high", 2, (v) => { state.mask.high = v; });
+  bindRange("mask-softness", 2, (v) => { state.mask.softness = v; });
+  bindCheck("mask-invert", (v) => { state.mask.invert = v; });
+  bindSelect("mask-dither", (v) => { state.mask.dither = v; });
+
+  bindSelect("effect-kind", (v) => { state.effectKind = v; });
+  bindSelect("dither-matrix", (v) => { state.dither.matrix = v; });
+  bindRange("dither-levels", 0, (v) => { state.dither.levels = v; });
+  bindRange("dither-scale", 0, (v) => { state.dither.scale = v; });
+  bindSelect("dither-color", (v) => { state.dither.color = v; });
+  bindRange("halftone-cell", 0, (v) => { state.halftone.cell = v; });
+  bindRange("halftone-angle", 0, (v) => { state.halftone.angle = v; });
+  bindSelect("halftone-shape", (v) => { state.halftone.shape = v; });
+  bindSelect("halftone-polarity", (v) => { state.halftone.polarity = v; });
+  bindSelect("halftone-color", (v) => { state.halftone.color = v; });
+  bindRange("ascii-cellw", 0, (v) => { state.ascii.cellWidth = v; });
+  bindRange("ascii-cellh", 0, (v) => { state.ascii.cellHeight = v; });
+  bindText("ascii-ramp", (v) => { state.ascii.ramp = v; });
+  bindText("ascii-font", (v) => { state.ascii.font = v; });
+  bindSelect("ascii-color", (v) => { state.ascii.color = v; });
+
+  bindSelect("blend", (v) => { state.blend = v; });
+  bindRange("opacity", 2, (v) => { state.opacity = v; });
+
+  $("foreground").addEventListener("input", () => {
+    state.foreground = $("foreground").value;
+    $("foreground-val").textContent = state.foreground.toUpperCase();
+    onManualChange();
+  });
+  bindCheck("paper-transparent", (v) => { state.transparent = v; });
+  $("background").addEventListener("input", () => {
+    state.background = $("background").value;
+    $("background-val").textContent = state.background.toUpperCase();
+    onManualChange();
+  });
+}
+
+/* ---------- output actions ---------- */
+
+function flashChip(chip, text) {
+  const original = chip.textContent;
+  chip.textContent = text;
+  setTimeout(() => { chip.textContent = original; }, 1200);
+}
+
+function initActions() {
+  $("btn-download").addEventListener("click", async () => {
+    if (!prevCanvas) return;
+    try {
+      const blob = await ink.toPNGBlob(prevCanvas);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "inkmask-lab.png";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (err) {
+      console.error("PNG export failed:", err);
+      flashChip($("btn-download"), "Export failed");
+    }
+  });
+
+  $("btn-copy").addEventListener("click", async () => {
+    const text = $("options-json").textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      flashChip($("btn-copy"), "Copied");
+    } catch (err) {
+      // The block below stays readable even when the clipboard is unavailable.
+      console.error("clipboard unavailable:", err);
+      flashChip($("btn-copy"), "Select below");
+    }
+  });
+
+  $("btn-reset").addEventListener("click", () => {
+    state = defaultState();
+    clearPresetPressed();
+    syncControls();
+    scheduleRender();
+  });
+}
+
+/* ---------- theme ---------- */
+
+function effectiveTheme() {
+  const stamped = document.documentElement.getAttribute("data-theme");
+  if (stamped === "dark" || stamped === "light") return stamped;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+function initTheme() {
+  const btn = $("theme-toggle");
+  function syncLabel() {
+    const t = effectiveTheme();
+    btn.textContent = t === "dark" ? "LIGHT" : "DARK";
+    btn.setAttribute(
+      "aria-label",
+      t === "dark" ? "Switch to light theme" : "Switch to dark theme",
+    );
+  }
+  syncLabel();
+  btn.addEventListener("click", () => {
+    const next = effectiveTheme() === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    syncLabel();
+  });
+}
+
+/* ---------- boot ---------- */
+
+function showBundleMissing() {
+  const ph = document.querySelector(".stage-placeholder");
+  if (ph) ph.textContent = "BUNDLE PENDING";
+  $("readout").textContent =
+    "LIBRARY BUNDLE NOT INJECTED — RUN THE SHOWCASE BUILD SCRIPT";
+}
+
+async function main() {
+  initTheme();
+  try {
+    ink = await waitForInkmask();
+  } catch {
+    showBundleMissing();
+    return;
+  }
+  state = defaultState();
+  initSources();
+  initPresets();
+  initControls();
+  initActions();
+  syncControls();
+  scheduleRender();
+}
+
+main();
+</script>
+</body>
+</html>
