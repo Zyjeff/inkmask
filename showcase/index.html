@@ -520,10 +520,12 @@
         <a href="#plate-04" role="listitem" data-plate="plate-04">PLATE 04</a>
         <a href="#plate-05" role="listitem" data-plate="plate-05">PLATE 05</a>
         <a href="#plate-06" role="listitem" data-plate="plate-06">PLATE 06</a>
+        <a href="#plate-07" role="listitem" data-plate="plate-07">PLATE 07</a>
+        <a href="#plate-08" role="listitem" data-plate="plate-08">PLATE 08</a>
       </div>
       <div class="rail-legend">
         <span><strong>inkmask</strong> 0.1.0</span>
-        <span>dither · halftone · ascii</span>
+        <span>dither · halftone · ascii · linear · radial masks</span>
       </div>
     </nav>
 
@@ -691,6 +693,46 @@
             <pre class="plate-options" id="opts-06"></pre>
           </div>
         </section>
+
+        <!-- PLATE 07 — Vermillion -->
+        <section class="plate" id="plate-07" data-plate-index="7">
+          <p class="plate-label">PLATE 07 — VERMILLION — 45DEG — 9PX CELL — NEGATIVE</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="7">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Negative polarity grows the dots as tone brightens, so the screen opens up in the luminous core instead of the shadows, the inverse of every other plate here, and the dark field stays continuous.
+            </p>
+            <pre class="plate-options" id="opts-07"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 08 — Meridian -->
+        <section class="plate" id="plate-08" data-plate-index="8">
+          <p class="plate-label">PLATE 08 — MERIDIAN — LINEAR RAMP 20DEG — 6PX CELL</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="8">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              The mask field here is the pixels position rather than its colour, so the screen fades out across the frame on a 20 degree axis regardless of what the image contains; the band and softness behave exactly as they do for a luminance mask, and the falloff is still resolved by the ordered matrix into dots.
+            </p>
+            <pre class="plate-options" id="opts-08"></pre>
+          </div>
+        </section>
       </main>
 
       <footer class="sheet-footer">
@@ -844,11 +886,25 @@ function computeCoverage(src, opts) {
     const low = opts.low;
     const high = opts.high;
     const inv = opts.invert;
+    // When space is "srgb" for luminance/external, remap the linear field to
+    // sRGB units so the band (low/high/softness) can be aimed with colour-picker
+    // values. Luminance is still COMPUTED in linear light; only the comparison
+    // units change. Other sources leave the field untouched.
+    const remapSrgb = opts.space === "srgb" &&
+        (opts.source === "luminance" || opts.source === "external");
     // softness is a ramp width in VALUE units (source-field 0-1), not pixels.
     // Spatial feathering is intentionally absent; the ordered-dither gate
     // produces the dotted falloff after this pure per-pixel band map.
+    //
+    // Positional mask sources ("linear", "radial") are NOT spatial feathering.
+    // The no-blur rule forbids smoothing a mask field across neighbouring
+    // pixels; a positional ramp is an input to the mask, still evaluated per
+    // pixel with no neighbourhood access, and its falloff is still resolved
+    // by the ordered-dither gate.
     for (let i = 0; i < n; i++) {
-        const v = field[i];
+        let v = field[i];
+        if (remapSrgb)
+            v = linearToSrgb(v);
         let c;
         if (s <= 0) {
             c = v >= low && v <= high ? 1 : 0;
@@ -934,6 +990,10 @@ function sourceField(src, opts) {
             return saturationField(src);
         case "gradient":
             return sobelMagnitude(luminanceField(src), src.width, src.height);
+        case "linear":
+            return linearField(src.width, src.height, opts.angle);
+        case "radial":
+            return radialField(src.width, src.height, opts.centerX, opts.centerY);
         case "external": {
             const ext = opts.external;
             if (!ext) {
@@ -945,6 +1005,73 @@ function sourceField(src, opts) {
             return luminanceField(ext);
         }
     }
+}
+/**
+ * Positional linear ramp. Pure function of (x, y); no neighbourhood access.
+ * Angle 0 runs left to right. The |cos|+|sin| denominator normalises the
+ * projection so t spans exactly 0..1 at any angle.
+ */
+function linearField(width, height, angleDeg) {
+    const out = new Float32Array(width * height);
+    const a = (angleDeg * Math.PI) / 180;
+    const cosA = Math.cos(a);
+    const sinA = Math.sin(a);
+    const denom = Math.abs(cosA) + Math.abs(sinA);
+    const invW = width <= 1 ? 0 : 1 / (width - 1);
+    const invH = height <= 1 ? 0 : 1 / (height - 1);
+    for (let y = 0; y < height; y++) {
+        const ny = y * invH - 0.5;
+        const row = y * width;
+        for (let x = 0; x < width; x++) {
+            const nx = x * invW - 0.5;
+            // denom is zero only if cos and sin are both zero, which never happens.
+            const t = 0.5 + (nx * cosA + ny * sinA) / denom;
+            out[row + x] = t;
+        }
+    }
+    return out;
+}
+/**
+ * Positional radial ramp. Distance from centre in normalised image coords,
+ * divided by the farthest corner distance, clamped to 0-1. Pure per-pixel.
+ */
+function radialField(width, height, centerX, centerY) {
+    const out = new Float32Array(width * height);
+    // Max distance from centre to any of the four corners (in 0-1 image coords).
+    const corners = [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [1, 1],
+    ];
+    let maxDist = 0;
+    for (const [cx, cy] of corners) {
+        const dx = cx - centerX;
+        const dy = cy - centerY;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d > maxDist)
+            maxDist = d;
+    }
+    // If maxDist is 0 (degenerate 0-size / centre at a single point only), avoid /0.
+    const invMax = maxDist > 0 ? 1 / maxDist : 0;
+    const invW = width <= 1 ? 0 : 1 / (width - 1);
+    const invH = height <= 1 ? 0 : 1 / (height - 1);
+    for (let y = 0; y < height; y++) {
+        const ny = height <= 1 ? centerY : y * invH;
+        const row = y * width;
+        for (let x = 0; x < width; x++) {
+            const nx = width <= 1 ? centerX : x * invW;
+            const dx = nx - centerX;
+            const dy = ny - centerY;
+            let t = Math.sqrt(dx * dx + dy * dy) * invMax;
+            if (t < 0)
+                t = 0;
+            else if (t > 1)
+                t = 1;
+            out[row + x] = t;
+        }
+    }
+    return out;
 }
 /** Sobel magnitude of a scalar field. Fixed 0-1 normalization; edge coords clamp. */
 function sobelMagnitude(field, width, height) {
@@ -1126,38 +1253,111 @@ function halftoneEffect(src, opts, fg, bg) {
     const rad = (opts.angle * Math.PI) / 180;
     const cos = Math.cos(rad);
     const sin = Math.sin(rad);
-    const sqrt2 = Math.SQRT2;
     const mono = opts.color === "mono";
     const circle = opts.shape === "circle";
+    const negative = opts.polarity === "negative";
+    // ── Pass 1: per-cell tone map over the rotated image AABB ─────────────────
+    // Rotate the four image corners to find the screen-space bounding box.
+    let rxMin = Infinity;
+    let rxMax = -Infinity;
+    let ryMin = Infinity;
+    let ryMax = -Infinity;
+    const corners = [
+        [0, 0],
+        [width - 1, 0],
+        [0, height - 1],
+        [width - 1, height - 1],
+    ];
+    for (let c = 0; c < 4; c++) {
+        const x = corners[c][0];
+        const y = corners[c][1];
+        const rx = x * cos + y * sin;
+        const ry = -x * sin + y * cos;
+        if (rx < rxMin)
+            rxMin = rx;
+        if (rx > rxMax)
+            rxMax = rx;
+        if (ry < ryMin)
+            ryMin = ry;
+        if (ry > ryMax)
+            ryMax = ry;
+    }
+    const cxMin = Math.floor(rxMin / cell);
+    const cxMax = Math.floor(rxMax / cell);
+    const cyMin = Math.floor(ryMin / cell);
+    const cyMax = Math.floor(ryMax / cell);
+    const cols = cxMax - cxMin + 1;
+    const nCells = cols * (cyMax - cyMin + 1);
+    // Indexed (cy - cyMin) * cols + (cx - cxMin)
+    const tone = new Float32Array(nCells);
+    const meanR = new Float32Array(nCells);
+    const meanG = new Float32Array(nCells);
+    const meanB = new Float32Array(nCells);
+    // Empty cells (no in-bounds samples) keep L=1 → no ink under positive polarity.
+    tone.fill(1);
+    for (let cy = cyMin; cy <= cyMax; cy++) {
+        for (let cx = cxMin; cx <= cxMax; cx++) {
+            const idx = (cy - cyMin) * cols + (cx - cxMin);
+            let sumL = 0;
+            let sumR = 0;
+            let sumG = 0;
+            let sumB = 0;
+            let n = 0;
+            // 4×4 sample grid spread inside the cell in screen space
+            for (let j = 0; j < 4; j++) {
+                for (let i = 0; i < 4; i++) {
+                    const srx = (cx + (i + 0.5) / 4) * cell;
+                    const sry = (cy + (j + 0.5) / 4) * cell;
+                    // Rotate sample back into image space; only count samples that land inside
+                    const sx = Math.round(srx * cos - sry * sin);
+                    const sy = Math.round(srx * sin + sry * cos);
+                    if (sx < 0 || sx >= width || sy < 0 || sy >= height)
+                        continue;
+                    const si = (sy * width + sx) * 4;
+                    const r = data[si];
+                    const g = data[si + 1];
+                    const b = data[si + 2];
+                    sumL += relativeLuminance(r, g, b);
+                    sumR += r;
+                    sumG += g;
+                    sumB += b;
+                    n++;
+                }
+            }
+            if (n > 0) {
+                tone[idx] = sumL / n;
+                meanR[idx] = sumR / n;
+                meanG[idx] = sumG / n;
+                meanB[idx] = sumB / n;
+            }
+        }
+    }
+    // ── Pass 2: rasterise per pixel ───────────────────────────────────────────
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4;
-            // 1. Rotate into screen space
+            // Rotate into screen space
             const rx = x * cos + y * sin;
             const ry = -x * sin + y * cos;
-            // 2. Locate the screen cell and its center
+            // Locate the screen cell and its center
             const cx = Math.floor(rx / cell);
             const cy = Math.floor(ry / cell);
             const ccx = (cx + 0.5) * cell;
             const ccy = (cy + 0.5) * cell;
-            // 3. Rotate center back into image space, sample luminance once per cell
-            let sx = Math.round(ccx * cos - ccy * sin);
-            let sy = Math.round(ccx * sin + ccy * cos);
-            if (sx < 0)
-                sx = 0;
-            else if (sx >= width)
-                sx = width - 1;
-            if (sy < 0)
-                sy = 0;
-            else if (sy >= height)
-                sy = height - 1;
-            const si = (sy * width + sx) * 4;
-            const sr = data[si];
-            const sg = data[si + 1];
-            const sb = data[si + 2];
-            const L = relativeLuminance(sr, sg, sb);
-            // 4. Size the dot from L (black fills cell; white is empty)
-            const extent = (1 - L) * cell * 0.5 * sqrt2;
+            // Look up precomputed cell tone and mean colour
+            let L = 1;
+            let sr = 0;
+            let sg = 0;
+            let sb = 0;
+            if (cx >= cxMin && cx <= cxMax && cy >= cyMin && cy <= cyMax) {
+                const idx = (cy - cyMin) * cols + (cx - cxMin);
+                L = tone[idx];
+                sr = meanR[idx];
+                sg = meanG[idx];
+                sb = meanB[idx];
+            }
+            // Dot extent: positive grows as image darkens; negative grows in the bright zone
+            const extent = (negative ? L : 1 - L) * cell * 0.5 * Math.SQRT2;
             let ink;
             if (circle) {
                 const dx = rx - ccx;
@@ -1167,7 +1367,7 @@ function halftoneEffect(src, opts, fg, bg) {
             else {
                 ink = Math.max(Math.abs(rx - ccx), Math.abs(ry - ccy)) <= extent;
             }
-            // 5. Emit colors — ink always alpha 255; paper is bg or transparent
+            // Emit colors — ink always alpha 255; paper is bg or transparent
             if (ink) {
                 if (mono) {
                     out[i] = fg[0];
@@ -1297,15 +1497,22 @@ function asciiEffect(src, opts, fg, bg) {
 // ---- dist/index.js ----
 /** Defaults applied to any option left unset. */
 const DEFAULTS = {
-    // Thresholds are linear-light luminance. sRGB mid-gray (128) is linear
-    // ~0.216, not 0.5; a band reaching high: 0.5 would gate the whole frame.
+    // Thresholds default to sRGB units because that is how people read a colour
+    // picker, while luminance is still computed in linear light. Set
+    // space: "linear" to work in linear units directly. The default band
+    // (high: 0.45, softness: 0.08) selects roughly the darker 45% of the image —
+    // the same visual result as the old linear high: 0.15.
     mask: {
         source: "luminance",
         low: 0,
-        high: 0.15,
-        softness: 0.06,
+        high: 0.45,
+        softness: 0.08,
         invert: false,
         dither: "bayer8",
+        space: "srgb",
+        angle: 0,
+        centerX: 0.5,
+        centerY: 0.5,
     },
     effect: {
         kind: "dither",
@@ -1336,6 +1543,7 @@ const EFFECT_DEFAULTS = {
         angle: 45,
         shape: "circle",
         color: "mono",
+        polarity: "positive",
     },
     ascii: {
         kind: "ascii",
@@ -1354,6 +1562,10 @@ function resolveMask(partial) {
         softness: partial?.softness ?? DEFAULTS.mask.softness,
         invert: partial?.invert ?? DEFAULTS.mask.invert,
         dither: partial?.dither ?? DEFAULTS.mask.dither,
+        space: partial?.space ?? DEFAULTS.mask.space,
+        angle: partial?.angle ?? DEFAULTS.mask.angle,
+        centerX: partial?.centerX ?? DEFAULTS.mask.centerX,
+        centerY: partial?.centerY ?? DEFAULTS.mask.centerY,
         external: partial?.external ?? DEFAULTS.mask.external,
     };
 }
@@ -1380,6 +1592,7 @@ function resolveEffect(input) {
             angle: p?.angle ?? d.angle,
             shape: p?.shape ?? d.shape,
             color: p?.color ?? d.color,
+            polarity: p?.polarity ?? d.polarity,
         };
     }
     // kind === "ascii"
@@ -1529,7 +1742,7 @@ const HERO_TREATMENTS = {
       "Dark-ink circular halftone at 8px and 45°. The band opens on the luminous blooms so the marks sit in the highlights and dissolve into the clean dark ground.",
     options: {
       effect: { kind: "halftone", cell: 8, angle: 45 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#0B0708",
     },
   },
@@ -1539,7 +1752,7 @@ const HERO_TREATMENTS = {
       "Mid-grey ASCII on a 9×13 grid under screen blend. Glyph density lands on the bright blooms; outside the band the dark ground stays untouched.",
     options: {
       effect: { kind: "ascii", cellWidth: 9, cellHeight: 13 },
-      mask: { low: 0.18, high: 1, softness: 0.16 },
+      mask: { low: 0.46, high: 1, softness: 0.31 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -1550,7 +1763,7 @@ const HERO_TREATMENTS = {
       "Blue-noise ordered dither in mono mid-grey under screen blend. Scattered marks follow the luminous band with no visible period, leaving the ground continuous.",
     options: {
       effect: { kind: "dither", matrix: "blueNoise" },
-      mask: { low: 0.14, high: 1, softness: 0.20 },
+      mask: { low: 0.41, high: 1, softness: 0.41 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -1561,7 +1774,7 @@ const HERO_TREATMENTS = {
       "Circular halftone at 6px and 15°, light-grey marks under overlay blend. Overlay ties screen density to the plate colour only where the luminous band opens.",
     options: {
       effect: { kind: "halftone", cell: 6, angle: 15 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#B0B0B0",
       blend: "overlay",
     },
@@ -1594,7 +1807,7 @@ const GALLERY = [
     label: "PLATE 01 — EMBER — 45DEG — 9PX CELL",
     options: {
       effect: { kind: "halftone", cell: 9, angle: 45 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#0B0708",
     },
     aria: "Plate 01 Ember: dark-ink halftone at 45 degrees, 9 pixel cells",
@@ -1614,7 +1827,7 @@ const GALLERY = [
     label: "PLATE 02 — HALIDE — 10×14 ASCII — SCREEN",
     options: {
       effect: { kind: "ascii", cellWidth: 10, cellHeight: 14 },
-      mask: { low: 0.20, high: 1, softness: 0.14 },
+      mask: { low: 0.48, high: 1, softness: 0.21 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -1635,7 +1848,7 @@ const GALLERY = [
     label: "PLATE 03 — CRIMSON — 75DEG — 5PX CELL",
     options: {
       effect: { kind: "halftone", cell: 5, angle: 75 },
-      mask: { low: 0.20, high: 1, softness: 0.16 },
+      mask: { low: 0.48, high: 1, softness: 0.26 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -1656,7 +1869,7 @@ const GALLERY = [
     label: "PLATE 04 — COBALT — BAYER 8 — 3× SCALE — SCREEN",
     options: {
       effect: { kind: "dither", matrix: "bayer8", scale: 3 },
-      mask: { low: 0.18, high: 1, softness: 0.15 },
+      mask: { low: 0.46, high: 1, softness: 0.27 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -1677,7 +1890,7 @@ const GALLERY = [
     label: "PLATE 05 — SULPHUR — 15DEG — 7PX SQUARE",
     options: {
       effect: { kind: "halftone", cell: 7, angle: 15, shape: "square" },
-      mask: { low: 0.30, high: 1, softness: 0.16 },
+      mask: { low: 0.58, high: 1, softness: 0.17 },
       foreground: "#0D0C04",
       opacity: 0.9,
     },
@@ -1703,11 +1916,52 @@ const GALLERY = [
         cellHeight: 15,
         ramp: BLOCK_RAMP,
       },
-      mask: { low: 0.17, high: 1, softness: 0.20 },
+      mask: { low: 0.45, high: 1, softness: 0.45 },
       foreground: "#0A0610",
       opacity: 0.85,
     },
     aria: "Plate 06 Orchid: block-shade ASCII ramp at 10 by 15 cells, 0.85 opacity",
+  },
+  {
+    id: 7,
+    name: "VERMILLION",
+    w: 900,
+    h: 580,
+    ground: "#0A0304",
+    blooms: [
+      { color: "#E30613", x: 0.42, y: 0.68, r: 0.50, blur: 95 },
+      { color: "#FF6B5A", x: 0.24, y: 0.34, r: 0.34, blur: 80 },
+      { color: "#FFFFFF", x: 0.80, y: 0.22, r: 0.24, blur: 70 },
+      { color: "#3A0208", x: 0.70, y: 0.85, r: 0.40, blur: 120 },
+    ],
+    label: "PLATE 07 — VERMILLION — 45DEG — 9PX CELL — NEGATIVE",
+    options: {
+      effect: { kind: "halftone", cell: 9, angle: 45, polarity: "negative" },
+      mask: { low: 0.40, high: 1, softness: 0.30 },
+      foreground: "#B8ACA8",
+      blend: "screen",
+    },
+    aria: "Plate 07 Vermillion: negative-polarity halftone whose dots open in the luminous core",
+  },
+  {
+    id: 8,
+    name: "MERIDIAN",
+    w: 900,
+    h: 580,
+    ground: "#050B12",
+    blooms: [
+      { color: "#1FB6FF", x: 0.30, y: 0.50, r: 0.46, blur: 90 },
+      { color: "#7BE8FF", x: 0.62, y: 0.30, r: 0.36, blur: 80 },
+      { color: "#0B3D6B", x: 0.80, y: 0.75, r: 0.42, blur: 110 },
+      { color: "#EAF6FF", x: 0.20, y: 0.20, r: 0.20, blur: 60 },
+    ],
+    label: "PLATE 08 — MERIDIAN — LINEAR RAMP 20DEG — 6PX CELL",
+    options: {
+      effect: { kind: "halftone", cell: 6, angle: 75 },
+      mask: { source: "linear", angle: 20, low: 0, high: 0.55, softness: 0.35 },
+      foreground: "#0A0F16",
+    },
+    aria: "Plate 08 Meridian: positional linear-ramp mask fading the screen across the frame",
   },
 ];
 

@@ -520,10 +520,12 @@
         <a href="#plate-04" role="listitem" data-plate="plate-04">PLATE 04</a>
         <a href="#plate-05" role="listitem" data-plate="plate-05">PLATE 05</a>
         <a href="#plate-06" role="listitem" data-plate="plate-06">PLATE 06</a>
+        <a href="#plate-07" role="listitem" data-plate="plate-07">PLATE 07</a>
+        <a href="#plate-08" role="listitem" data-plate="plate-08">PLATE 08</a>
       </div>
       <div class="rail-legend">
         <span><strong>inkmask</strong> 0.1.0</span>
-        <span>dither · halftone · ascii</span>
+        <span>dither · halftone · ascii · linear · radial masks</span>
       </div>
     </nav>
 
@@ -691,6 +693,46 @@
             <pre class="plate-options" id="opts-06"></pre>
           </div>
         </section>
+
+        <!-- PLATE 07 — Vermillion -->
+        <section class="plate" id="plate-07" data-plate-index="7">
+          <p class="plate-label">PLATE 07 — VERMILLION — 45DEG — 9PX CELL — NEGATIVE</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="7">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              Negative polarity grows the dots as tone brightens, so the screen opens up in the luminous core instead of the shadows, the inverse of every other plate here, and the dark field stays continuous.
+            </p>
+            <pre class="plate-options" id="opts-07"></pre>
+          </div>
+        </section>
+
+        <!-- PLATE 08 — Meridian -->
+        <section class="plate" id="plate-08" data-plate-index="8">
+          <p class="plate-label">PLATE 08 — MERIDIAN — LINEAR RAMP 20DEG — 6PX CELL</p>
+          <figure class="plate-frame">
+            <div class="plate-slot" data-render-target="8">
+              <span class="plate-placeholder" aria-hidden="true">RENDERING…</span>
+            </div>
+            <span class="reg reg--tl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--tr" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--bl" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+            <span class="reg reg--br" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 0v12M0 6h12" stroke="currentColor" stroke-width="1"/></svg></span>
+          </figure>
+          <div class="plate-meta">
+            <p class="plate-caption">
+              The mask field here is the pixels position rather than its colour, so the screen fades out across the frame on a 20 degree axis regardless of what the image contains; the band and softness behave exactly as they do for a luminance mask, and the falloff is still resolved by the ordered matrix into dots.
+            </p>
+            <pre class="plate-options" id="opts-08"></pre>
+          </div>
+        </section>
       </main>
 
       <footer class="sheet-footer">
@@ -725,7 +767,7 @@ const HERO_TREATMENTS = {
       "Dark-ink circular halftone at 8px and 45°. The band opens on the luminous blooms so the marks sit in the highlights and dissolve into the clean dark ground.",
     options: {
       effect: { kind: "halftone", cell: 8, angle: 45 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#0B0708",
     },
   },
@@ -735,7 +777,7 @@ const HERO_TREATMENTS = {
       "Mid-grey ASCII on a 9×13 grid under screen blend. Glyph density lands on the bright blooms; outside the band the dark ground stays untouched.",
     options: {
       effect: { kind: "ascii", cellWidth: 9, cellHeight: 13 },
-      mask: { low: 0.18, high: 1, softness: 0.16 },
+      mask: { low: 0.46, high: 1, softness: 0.31 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -746,7 +788,7 @@ const HERO_TREATMENTS = {
       "Blue-noise ordered dither in mono mid-grey under screen blend. Scattered marks follow the luminous band with no visible period, leaving the ground continuous.",
     options: {
       effect: { kind: "dither", matrix: "blueNoise" },
-      mask: { low: 0.14, high: 1, softness: 0.20 },
+      mask: { low: 0.41, high: 1, softness: 0.41 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -757,7 +799,7 @@ const HERO_TREATMENTS = {
       "Circular halftone at 6px and 15°, light-grey marks under overlay blend. Overlay ties screen density to the plate colour only where the luminous band opens.",
     options: {
       effect: { kind: "halftone", cell: 6, angle: 15 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#B0B0B0",
       blend: "overlay",
     },
@@ -790,7 +832,7 @@ const GALLERY = [
     label: "PLATE 01 — EMBER — 45DEG — 9PX CELL",
     options: {
       effect: { kind: "halftone", cell: 9, angle: 45 },
-      mask: { low: 0.16, high: 1, softness: 0.18 },
+      mask: { low: 0.44, high: 1, softness: 0.44 },
       foreground: "#0B0708",
     },
     aria: "Plate 01 Ember: dark-ink halftone at 45 degrees, 9 pixel cells",
@@ -810,7 +852,7 @@ const GALLERY = [
     label: "PLATE 02 — HALIDE — 10×14 ASCII — SCREEN",
     options: {
       effect: { kind: "ascii", cellWidth: 10, cellHeight: 14 },
-      mask: { low: 0.20, high: 1, softness: 0.14 },
+      mask: { low: 0.48, high: 1, softness: 0.21 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -831,7 +873,7 @@ const GALLERY = [
     label: "PLATE 03 — CRIMSON — 75DEG — 5PX CELL",
     options: {
       effect: { kind: "halftone", cell: 5, angle: 75 },
-      mask: { low: 0.20, high: 1, softness: 0.16 },
+      mask: { low: 0.48, high: 1, softness: 0.26 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -852,7 +894,7 @@ const GALLERY = [
     label: "PLATE 04 — COBALT — BAYER 8 — 3× SCALE — SCREEN",
     options: {
       effect: { kind: "dither", matrix: "bayer8", scale: 3 },
-      mask: { low: 0.18, high: 1, softness: 0.15 },
+      mask: { low: 0.46, high: 1, softness: 0.27 },
       foreground: "#8C8C8C",
       blend: "screen",
     },
@@ -873,7 +915,7 @@ const GALLERY = [
     label: "PLATE 05 — SULPHUR — 15DEG — 7PX SQUARE",
     options: {
       effect: { kind: "halftone", cell: 7, angle: 15, shape: "square" },
-      mask: { low: 0.30, high: 1, softness: 0.16 },
+      mask: { low: 0.58, high: 1, softness: 0.17 },
       foreground: "#0D0C04",
       opacity: 0.9,
     },
@@ -899,11 +941,52 @@ const GALLERY = [
         cellHeight: 15,
         ramp: BLOCK_RAMP,
       },
-      mask: { low: 0.17, high: 1, softness: 0.20 },
+      mask: { low: 0.45, high: 1, softness: 0.45 },
       foreground: "#0A0610",
       opacity: 0.85,
     },
     aria: "Plate 06 Orchid: block-shade ASCII ramp at 10 by 15 cells, 0.85 opacity",
+  },
+  {
+    id: 7,
+    name: "VERMILLION",
+    w: 900,
+    h: 580,
+    ground: "#0A0304",
+    blooms: [
+      { color: "#E30613", x: 0.42, y: 0.68, r: 0.50, blur: 95 },
+      { color: "#FF6B5A", x: 0.24, y: 0.34, r: 0.34, blur: 80 },
+      { color: "#FFFFFF", x: 0.80, y: 0.22, r: 0.24, blur: 70 },
+      { color: "#3A0208", x: 0.70, y: 0.85, r: 0.40, blur: 120 },
+    ],
+    label: "PLATE 07 — VERMILLION — 45DEG — 9PX CELL — NEGATIVE",
+    options: {
+      effect: { kind: "halftone", cell: 9, angle: 45, polarity: "negative" },
+      mask: { low: 0.40, high: 1, softness: 0.30 },
+      foreground: "#B8ACA8",
+      blend: "screen",
+    },
+    aria: "Plate 07 Vermillion: negative-polarity halftone whose dots open in the luminous core",
+  },
+  {
+    id: 8,
+    name: "MERIDIAN",
+    w: 900,
+    h: 580,
+    ground: "#050B12",
+    blooms: [
+      { color: "#1FB6FF", x: 0.30, y: 0.50, r: 0.46, blur: 90 },
+      { color: "#7BE8FF", x: 0.62, y: 0.30, r: 0.36, blur: 80 },
+      { color: "#0B3D6B", x: 0.80, y: 0.75, r: 0.42, blur: 110 },
+      { color: "#EAF6FF", x: 0.20, y: 0.20, r: 0.20, blur: 60 },
+    ],
+    label: "PLATE 08 — MERIDIAN — LINEAR RAMP 20DEG — 6PX CELL",
+    options: {
+      effect: { kind: "halftone", cell: 6, angle: 75 },
+      mask: { source: "linear", angle: 20, low: 0, high: 0.55, softness: 0.35 },
+      foreground: "#0A0F16",
+    },
+    aria: "Plate 08 Meridian: positional linear-ramp mask fading the screen across the frame",
   },
 ];
 
