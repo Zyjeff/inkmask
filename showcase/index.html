@@ -606,7 +606,7 @@
           </figure>
           <div class="plate-meta">
             <p class="plate-caption">
-              White ASCII on a 10×14 cell grid under screen blend. Glyph density lands on the cyan and violet blooms; outside the band the dark ground stays untouched.
+              Mid-grey ASCII on a 10×14 cell grid under screen blend. Glyph density lands on the cyan and violet blooms; outside the band the dark ground stays untouched.
             </p>
             <pre class="plate-options" id="opts-02"></pre>
           </div>
@@ -626,7 +626,7 @@
           </figure>
           <div class="plate-meta">
             <p class="plate-caption">
-              White circular halftone at 5px and 75° under screen blend. Rosettes open on the crimson blooms and dissolve into the continuous dark ground.
+              Mid-grey circular halftone at 5px and 75° under screen blend. Rosettes open on the crimson blooms and dissolve into the continuous dark ground.
             </p>
             <pre class="plate-options" id="opts-03"></pre>
           </div>
@@ -646,7 +646,7 @@
           </figure>
           <div class="plate-meta">
             <p class="plate-caption">
-              Bayer-8 ordered dither scaled 3×, mono white on screen blend. The coarse lattice lights the cobalt blooms and fades out into the clean dark ground.
+              Bayer-8 ordered dither scaled 3×, mono mid-grey on screen blend. The coarse lattice lights the cobalt blooms and fades out into the clean dark ground.
             </p>
             <pre class="plate-options" id="opts-04"></pre>
           </div>
@@ -1536,33 +1536,33 @@ const HERO_TREATMENTS = {
   "ascii-screen": {
     label: "ASCII / SCREEN",
     caption:
-      "White ASCII on a 9×13 grid under screen blend. Glyph density lands on the bright blooms; outside the band the dark ground stays untouched.",
+      "Mid-grey ASCII on a 9×13 grid under screen blend. Glyph density lands on the bright blooms; outside the band the dark ground stays untouched.",
     options: {
       effect: { kind: "ascii", cellWidth: 9, cellHeight: 13 },
       mask: { low: 0.18, high: 1, softness: 0.16 },
-      foreground: "#FFFFFF",
+      foreground: "#8C8C8C",
       blend: "screen",
     },
   },
   "dither-bluenoise": {
     label: "DITHER / BLUE NOISE",
     caption:
-      "Blue-noise ordered dither in mono white under screen blend. Scattered marks follow the luminous band with no visible period, leaving the ground continuous.",
+      "Blue-noise ordered dither in mono mid-grey under screen blend. Scattered marks follow the luminous band with no visible period, leaving the ground continuous.",
     options: {
       effect: { kind: "dither", matrix: "blueNoise" },
       mask: { low: 0.14, high: 1, softness: 0.20 },
-      foreground: "#FFFFFF",
+      foreground: "#8C8C8C",
       blend: "screen",
     },
   },
   "halftone-overlay": {
     label: "HALFTONE / OVERLAY",
     caption:
-      "Circular halftone at 6px and 15°, white marks under overlay blend. Overlay ties screen density to the plate colour only where the luminous band opens.",
+      "Circular halftone at 6px and 15°, light-grey marks under overlay blend. Overlay ties screen density to the plate colour only where the luminous band opens.",
     options: {
       effect: { kind: "halftone", cell: 6, angle: 15 },
       mask: { low: 0.16, high: 1, softness: 0.18 },
-      foreground: "#FFFFFF",
+      foreground: "#B0B0B0",
       blend: "overlay",
     },
   },
@@ -1615,10 +1615,10 @@ const GALLERY = [
     options: {
       effect: { kind: "ascii", cellWidth: 10, cellHeight: 14 },
       mask: { low: 0.20, high: 1, softness: 0.14 },
-      foreground: "#FFFFFF",
+      foreground: "#8C8C8C",
       blend: "screen",
     },
-    aria: "Plate 02 Halide: ASCII glyphs screened over luminous blooms",
+    aria: "Plate 02 Halide: Mid-grey ASCII glyphs screened over luminous blooms",
   },
   {
     id: 3,
@@ -1636,10 +1636,10 @@ const GALLERY = [
     options: {
       effect: { kind: "halftone", cell: 5, angle: 75 },
       mask: { low: 0.20, high: 1, softness: 0.16 },
-      foreground: "#FFFFFF",
+      foreground: "#8C8C8C",
       blend: "screen",
     },
-    aria: "Plate 03 Crimson: white halftone rosettes at 75 degrees, 5 pixel cells, screen blend",
+    aria: "Plate 03 Crimson: mid-grey halftone rosettes at 75 degrees, 5 pixel cells, screen blend",
   },
   {
     id: 4,
@@ -1657,10 +1657,10 @@ const GALLERY = [
     options: {
       effect: { kind: "dither", matrix: "bayer8", scale: 3 },
       mask: { low: 0.18, high: 1, softness: 0.15 },
-      foreground: "#FFFFFF",
+      foreground: "#8C8C8C",
       blend: "screen",
     },
-    aria: "Plate 04 Cobalt: Bayer-8 dither scaled 3x, white on screen blend",
+    aria: "Plate 04 Cobalt: Bayer-8 dither scaled 3x, mid-grey on screen blend",
   },
   {
     id: 5,
