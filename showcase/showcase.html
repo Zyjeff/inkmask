@@ -832,10 +832,11 @@
             <button type="button" class="chip" data-treatment="warm-ink" aria-pressed="false">WARM INK</button>
             <button type="button" class="chip" data-treatment="ascii" aria-pressed="false">ASCII</button>
             <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+            <button type="button" class="chip" data-treatment="masked-print" aria-pressed="false">MASKED PRINT</button>
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              An eclipsed disc: a lit crescent against a near-black field. The default treatment uses negative polarity, so dots grow as tone brightens and the screen opens only along the crescent — the inverse of a conventional halftone. The alternates change the ink colour, swap dots for glyphs, or drop the mask and screen the whole frame.
+              An eclipsed disc: a lit crescent against a near-black field. The default treatment uses negative polarity, so dots grow as tone brightens and the screen opens only along the crescent — the inverse of a conventional halftone. The alternates change the ink colour, swap dots for glyphs, or drop the mask and screen the whole frame. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the crescent band the inverse screen uses, so the photograph's colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-09"></pre>
           </div>
@@ -856,13 +857,14 @@
           <div class="chip-row" role="group" aria-label="Plate 10 treatment selection" data-photo-chips="10">
             <button type="button" class="chip" data-treatment="original" aria-pressed="false">ORIGINAL</button>
             <button type="button" class="chip" data-treatment="full-screen" aria-pressed="true">FULL SCREEN</button>
+            <button type="button" class="chip" data-treatment="masked-print" aria-pressed="false">MASKED PRINT</button>
             <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
             <button type="button" class="chip" data-treatment="highlights" aria-pressed="false">HIGHLIGHTS</button>
             <button type="button" class="chip" data-treatment="ascii" aria-pressed="false">ASCII</button>
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A sphere lit from one side. The default is a full band: the whole frame is screened in dark ink with no mask cutout — the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect. The alternates reintroduce the gate, confining dots, dither, or glyphs to the lit side.
+              A sphere lit from one side. The default is a full band: the whole frame is screened in dark ink with no mask cutout — the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect. The alternates reintroduce the gate, confining dots, dither, or glyphs to the lit side. MASKED PRINT keeps the full-screen ink and dot texture but confines it to the same lit band the inverse screen uses, so the source colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-10"></pre>
           </div>
@@ -886,10 +888,11 @@
             <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
             <button type="button" class="chip" data-treatment="halftone" aria-pressed="false">HALFTONE</button>
             <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+            <button type="button" class="chip" data-treatment="masked-print" aria-pressed="false">MASKED PRINT</button>
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A chasm interior: a red mass beside a brighter cyan field. The default multiplies blue-noise dither in dark ink into the red mass and the deeper tones around it, excluding the brightest cyan so the field the figure stands in comes through untouched. The alternates move the band to the highlights, resolve the same band as a halftone, or cover the full frame.
+              A chasm interior: a red mass beside a brighter cyan field. The default multiplies blue-noise dither in dark ink into the red mass and the deeper tones around it, excluding the brightest cyan so the field the figure stands in comes through untouched. The alternates move the band to the highlights, resolve the same band as a halftone, or cover the full frame. MASKED PRINT keeps the full-frame dither and dark ink but confines it to the bright cyan band the inverse screen uses, so the source colour survives between the marks.
             </p>
             <pre class="plate-options" id="opts-11"></pre>
           </div>
@@ -913,10 +916,11 @@
             <button type="button" class="chip" data-treatment="radial" aria-pressed="false">RADIAL</button>
             <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
             <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+            <button type="button" class="chip" data-treatment="masked-print" aria-pressed="false">MASKED PRINT</button>
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A heather field, masked by position rather than colour in the default treatment: the mask field is the pixel's vertical position, so the screen fades across the frame regardless of what the photograph contains. The alternates swap the ramp for a radial falloff, gate on luminance instead of position, or drop the mask entirely.
+              A heather field, masked by position rather than colour in the default treatment: the mask field is the pixel's vertical position, so the screen fades across the frame regardless of what the photograph contains. The alternates swap the ramp for a radial falloff, gate on luminance instead of position, or drop the mask entirely. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the highlight band the inverse screen uses, so the field's colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-12"></pre>
           </div>
@@ -940,10 +944,11 @@
             <button type="button" class="chip" data-treatment="inverse-screen" aria-pressed="false">INVERSE SCREEN</button>
             <button type="button" class="chip" data-treatment="shadow-dither" aria-pressed="false">SHADOW DITHER</button>
             <button type="button" class="chip" data-treatment="full-frame" aria-pressed="false">FULL FRAME</button>
+            <button type="button" class="chip" data-treatment="masked-print" aria-pressed="false">MASKED PRINT</button>
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A library interior. The default sets ASCII at an 8×12 cell over the midtones and highlights; the mask resolves to the character cell, so no glyph is ever half-masked at the boundary. The alternates trade glyphs for a negative halftone in the highlights, blue-noise dither confined to the shadows, or an unmasked full-frame screen.
+              A library interior. The default sets ASCII at an 8×12 cell over the midtones and highlights; the mask resolves to the character cell, so no glyph is ever half-masked at the boundary. The alternates trade glyphs for a negative halftone in the highlights, blue-noise dither confined to the shadows, or an unmasked full-frame screen. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the same bright band the inverse screen uses, so the interior's colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-13"></pre>
           </div>
@@ -1268,6 +1273,15 @@ const PHOTO_GALLERY = [
         },
         aria: "Plate 09 Eclipse: full-frame dark-ink halftone on paper, no mask cutout",
       },
+      "masked-print": {
+        label: "MASKED PRINT",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 45 },
+          mask: { low: 0.35, high: 1, softness: 0.25 },
+          foreground: "#0A0A0C",
+        },
+        aria: "Plate 09 Eclipse: full-frame dark ink confined to the lit crescent, the photograph showing between the dots",
+      },
     },
   },
   {
@@ -1290,6 +1304,15 @@ const PHOTO_GALLERY = [
           foreground: "#141210",
         },
         aria: "Plate 10 Sphere: conventional full-frame halftone of a photograph, no mask cutout",
+      },
+      "masked-print": {
+        label: "MASKED PRINT",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0.50, high: 1, softness: 0.25 },
+          foreground: "#141210",
+        },
+        aria: "Plate 10 Sphere: full-screen dark ink confined to the lit side of the sphere, the photograph showing between the dots",
       },
       "inverse-screen": {
         label: "INVERSE SCREEN",
@@ -1373,6 +1396,16 @@ const PHOTO_GALLERY = [
         },
         aria: "Plate 11 Chasm: blue-noise dither multiplied over the whole frame, no mask cutout",
       },
+      "masked-print": {
+        label: "MASKED PRINT",
+        options: {
+          effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
+          mask: { low: 0.80, high: 1, softness: 0.14 },
+          foreground: "#0A2540",
+          blend: "multiply",
+        },
+        aria: "Plate 11 Chasm: dark blue-noise dither multiplied only into the brightest cyan field, colour kept between the marks",
+      },
     },
   },
   {
@@ -1423,6 +1456,15 @@ const PHOTO_GALLERY = [
           foreground: "#24121C",
         },
         aria: "Plate 12 Heather: full-frame dark-ink halftone, no mask cutout",
+      },
+      "masked-print": {
+        label: "MASKED PRINT",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0.65, high: 1, softness: 0.20 },
+          foreground: "#24121C",
+        },
+        aria: "Plate 12 Heather: full-frame dark ink confined to the photograph's highlights, colour kept between the dots",
       },
     },
   },
@@ -1476,6 +1518,15 @@ const PHOTO_GALLERY = [
           foreground: "#0A1018",
         },
         aria: "Plate 13 Library: full-frame dark-ink halftone, no mask cutout",
+      },
+      "masked-print": {
+        label: "MASKED PRINT",
+        options: {
+          effect: { kind: "halftone", cell: 6, angle: 15 },
+          mask: { low: 0.50, high: 1, softness: 0.20 },
+          foreground: "#0A1018",
+        },
+        aria: "Plate 13 Library: full-frame dark ink confined to the interior's brightest passages, the photograph showing between the dots",
       },
     },
   },
