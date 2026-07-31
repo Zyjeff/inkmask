@@ -12,7 +12,19 @@ export type RGB = [number, number, number];
 export type MatrixKind = "bayer2" | "bayer4" | "bayer8" | "blueNoise";
 
 /** Which property of the source image the mask is derived from. */
-export type MaskSourceKind = "luminance" | "saturation" | "gradient" | "external";
+export type MaskSourceKind =
+  | "luminance"
+  | "saturation"
+  | "gradient"
+  | "linear"
+  | "radial"
+  | "external";
+
+/** Units for the mask band. Luminance is always COMPUTED in linear light. */
+export type ThresholdSpace = "linear" | "srgb";
+
+/** Halftone dot growth direction. */
+export type HalftonePolarity = "positive" | "negative";
 
 export type BlendMode = "normal" | "multiply" | "screen" | "overlay";
 
@@ -34,6 +46,19 @@ export interface MaskOptions {
   softness: number;
   invert: boolean;
   dither: MatrixKind;
+  /**
+   * Units for `low`, `high`, and `softness`. "srgb" lets you aim with the
+   * values you see in a colour picker. Applies to the "luminance" and
+   * "external" sources only -- saturation, gradient, and the positional
+   * ramps are not luminances, so sRGB encoding is meaningless there and
+   * this field is ignored for them.
+   */
+  space: ThresholdSpace;
+  /** Ramp direction in degrees for source "linear". 0 runs left to right. */
+  angle: number;
+  /** Ramp centre for source "radial", 0-1 of the image. */
+  centerX: number;
+  centerY: number;
   /** Required when `source` is "external". Its luminance becomes the coverage. */
   external?: Pixels;
 }
@@ -56,6 +81,7 @@ export interface HalftoneEffect {
   angle: number;
   shape: "circle" | "square";
   color: ColorMode;
+  polarity: HalftonePolarity;
 }
 
 export interface AsciiEffect {

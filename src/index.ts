@@ -44,15 +44,22 @@ export const DEFAULTS: {
   foreground: string;
   background: string | null;
 } = {
-  // Thresholds are linear-light luminance. sRGB mid-gray (128) is linear
-  // ~0.216, not 0.5; a band reaching high: 0.5 would gate the whole frame.
+  // Thresholds default to sRGB units because that is how people read a colour
+  // picker, while luminance is still computed in linear light. Set
+  // space: "linear" to work in linear units directly. The default band
+  // (high: 0.45, softness: 0.08) selects roughly the darker 45% of the image —
+  // the same visual result as the old linear high: 0.15.
   mask: {
     source: "luminance",
     low: 0,
-    high: 0.15,
-    softness: 0.06,
+    high: 0.45,
+    softness: 0.08,
     invert: false,
     dither: "bayer8",
+    space: "srgb",
+    angle: 0,
+    centerX: 0.5,
+    centerY: 0.5,
   },
   effect: {
     kind: "dither",
@@ -88,6 +95,7 @@ export const EFFECT_DEFAULTS: {
     angle: 45,
     shape: "circle",
     color: "mono",
+    polarity: "positive",
   },
   ascii: {
     kind: "ascii",
@@ -107,6 +115,10 @@ function resolveMask(partial?: Partial<MaskOptions>): MaskOptions {
     softness: partial?.softness ?? DEFAULTS.mask.softness,
     invert: partial?.invert ?? DEFAULTS.mask.invert,
     dither: partial?.dither ?? DEFAULTS.mask.dither,
+    space: partial?.space ?? DEFAULTS.mask.space,
+    angle: partial?.angle ?? DEFAULTS.mask.angle,
+    centerX: partial?.centerX ?? DEFAULTS.mask.centerX,
+    centerY: partial?.centerY ?? DEFAULTS.mask.centerY,
     external: partial?.external ?? DEFAULTS.mask.external,
   };
 }
@@ -134,6 +146,7 @@ function resolveEffect(input?: EffectInput): EffectOptions {
       angle: p?.angle ?? d.angle,
       shape: p?.shape ?? d.shape,
       color: p?.color ?? d.color,
+      polarity: p?.polarity ?? d.polarity,
     };
   }
   // kind === "ascii"

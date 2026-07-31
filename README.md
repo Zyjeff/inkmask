@@ -51,17 +51,23 @@ All options are optional. Unset fields take the defaults below.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| `source` | `"luminance" \| "saturation" \| "gradient" \| "external"` | `"luminance"` | Property of the source used to build coverage. |
+| `source` | `"luminance" \| "saturation" \| "gradient" \| "linear" \| "radial" \| "external"` | `"luminance"` | Property of the source used to build coverage. `"linear"` and `"radial"` are positional ramps (pixel position, not colour). |
 | `low` | `number` | `0` | Lower edge of the accepted band, 0–1, in the mask source's own units. |
-| `high` | `number` | `0.15` | Upper edge of the accepted band, 0–1. |
-| `softness` | `number` | `0.06` | Width of the linear ramp at each band edge, 0–1, in value units (not pixels). |
+| `high` | `number` | `0.45` | Upper edge of the accepted band, 0–1. |
+| `softness` | `number` | `0.08` | Width of the linear ramp at each band edge, 0–1, in value units (not pixels). |
 | `invert` | `boolean` | `false` | Invert coverage after the band map. |
 | `dither` | `"bayer2" \| "bayer4" \| "bayer8" \| "blueNoise"` | `"bayer8"` | Ordered matrix used to threshold coverage into the binary gate. Independent of the effect matrix. |
+| `space` | `"linear" \| "srgb"` | `"srgb"` | Units for `low`, `high`, and `softness`. Applies to `"luminance"` and `"external"` only. |
+| `angle` | `number` | `0` | Ramp direction in degrees for source `"linear"`. 0 runs left to right. |
+| `centerX` | `number` | `0.5` | Ramp centre X for source `"radial"`, 0–1 of the image. |
+| `centerY` | `number` | `0.5` | Ramp centre Y for source `"radial"`, 0–1 of the image. |
 | `external` | `Pixels` | — | Required when `source` is `"external"`. Its luminance becomes the coverage field. |
 
-#### Thresholds are in linear-light units
+#### Thresholds are in sRGB units by default
 
-Mask band edges are compared against linear-light values, not 0–255 sRGB intuition:
+Mask band edges default to **sRGB units** so you can aim with the values you see in a colour picker (0–1 scale of the 0–255 channel). Luminance is still *computed* in linear light so channel weighting stays correct; only the comparison units change. Set `space: "linear"` to work in linear-light units directly.
+
+Reference for linear mode (`space: "linear"`):
 
 | sRGB 0-255 | linear |
 | --- | --- |
@@ -72,7 +78,11 @@ Mask band edges are compared against linear-light values, not 0–255 sRGB intui
 | 224 | 0.745 |
 | 255 | 1.000 |
 
-Most photographs concentrate below linear 0.35, so useful bands are typically narrow and low — a `high` around 0.1 to 0.2 is a normal starting point.
+In sRGB units the default band (`high: 0.45`, `softness: 0.08`) selects roughly the darker 45% of the image. In linear mode, useful bands are typically narrower and lower — a `high` around 0.1 to 0.2 is a normal starting point.
+
+#### Dissolving across space
+
+Sources `"linear"` and `"radial"` build coverage from the pixel's position rather than its colour. The band and softness work the same way as for luminance, but the field is a positional ramp, so marks can fade out across the frame without supplying a mask image. `angle` controls the linear ramp direction; `centerX` / `centerY` set the radial centre.
 
 ### Effect (`options.effect`)
 
@@ -97,8 +107,11 @@ Discriminated by `kind`. Default effect is dither. Per-kind defaults come from `
 | `angle` | `number` | `45` | Screen angle in degrees. |
 | `shape` | `"circle" \| "square"` | `"circle"` | Dot shape. |
 | `color` | `"mono" \| "source"` | `"mono"` | `"mono"` draws two flat colors; `"source"` keeps source colors. |
+| `polarity` | `"positive" \| "negative"` | `"positive"` | Direction dot size grows: positive grows dots as tone darkens (ink on paper); negative grows them as tone brightens (light ink on a dark field). |
 
 #### ASCII (`kind: "ascii"`)
+
+ASCII runs through the same mask and composite path but produces terminal-style glyphs rather than print texture.
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |

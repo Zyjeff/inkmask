@@ -41,6 +41,10 @@ function baseOpts(over: Partial<MaskOptions> = {}): MaskOptions {
     softness: 0,
     invert: false,
     dither: "bayer8",
+    space: "linear",
+    angle: 0,
+    centerX: 0.5,
+    centerY: 0.5,
     ...over,
   };
 }
@@ -65,6 +69,8 @@ describe("computeCoverage", () => {
 
   // Guards the no-blur requirement: coverage[i] is a pure function of pixel i
   // alone (for luminance). A blur-based implementation cannot pass this test.
+  // Scoped to the luminance source only -- cannot apply to positional sources,
+  // whose coverage depends on position rather than pixel value.
   it("no spatial feather: coverage permutes identically when pixels are shuffled", () => {
     const w = 32;
     const h = 32;
@@ -215,6 +221,305 @@ describe("computeCoverage", () => {
     expect(() =>
       computeCoverage(src, baseOpts({ source: "external", external: wrong })),
     ).toThrow(RangeError);
+  });
+
+  it("linear ramp at 0 degrees: varies left to right, constant down each column", () => {
+    const w = 32;
+    const h = 16;
+    const src = solid(w, h, 128, 128, 128);
+    // Soft tent map recovers continuous field ≈ coverage via low=high=0, soft=1:
+    // c = min(v+1, 1-v) = 1-v for v in [0,1], so field = 1 - c.
+    const soft = computeCoverage(
+      src,
+      baseOpts({
+        source: "linear",
+        angle: 0,
+        low: 0,
+        high: 0,
+        softness: 1,
+      }),
+    );
+    // Leftmost column field near 0, rightmost near 1.
+    for (let y = 0; y < h; y++) {
+      const leftField = 1 - soft[y * w + 0]!;
+      const rightField = 1 - soft[y * w + (w - 1)]!;
+      expect(leftField).toBeLessThan(0.05);
+      expect(rightField).toBeGreaterThan(0.95);
+    }
+    // Constant down any column (coverage identical ⇒ field identical).
+    for (let x = 0; x < w; x++) {
+      const top = soft[x]!;
+      for (let y = 1; y < h; y++) {
+        expect(soft[y * w + x]!).toBeCloseTo(top, 5);
+      }
+    }
+    // Wide hard band [0,1] covers everything (sanity).
+    const full = computeCoverage(
+      src,
+      baseOpts({ source: "linear", angle: 0, low: 0, high: 1, softness: 0 }),
+    );
+    for (let i = 0; i < full.length; i++) expect(full[i]).toBe(1);
+
+    // Narrow band selects a vertical slab near mid-image.
+    const slab = computeCoverage(
+      src,
+      baseOpts({
+        source: "linear",
+        angle: 0,
+        low: 0.45,
+        high: 0.55,
+        softness: 0,
+      }),
+    );
+    let minOnX = w;
+    let maxOnX = -1;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (slab[y * w + x]! === 1) {
+          if (x < minOnX) minOnX = x;
+          if (x > maxOnX) maxOnX = x;
+        }
+      }
+    }
+    expect(maxOnX).toBeGreaterThanOrEqual(minOnX);
+    // Slab is a contiguous vertical band (not full width).
+    expect(minOnX).toBeGreaterThan(0);
+    expect(maxOnX).toBeLessThan(w - 1);
+    // Every on-pixel shares the same column range across rows.
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const on = slab[y * w + x]! === 1;
+        if (x >= minOnX && x <= maxOnX) expect(on).toBe(true);
+        else expect(on).toBe(false);
+      }
+    }
+  });
+
+  it("linear ramp at 90 degrees: varies top to bottom, constant across each row", () => {
+    const w = 16;
+    const h = 32;
+    const src = solid(w, h, 200, 100, 50);
+    // Recover field via soft map: field = 1 - c when low=high=0, soft=1.
+    const soft = computeCoverage(
+      src,
+      baseOpts({
+        source: "linear",
+        angle: 90,
+        low: 0,
+        high: 0,
+        softness: 1,
+      }),
+    );
+    for (let x = 0; x < w; x++) {
+      expect(1 - soft[0 * w + x]!).toBeLessThan(0.05);
+      expect(1 - soft[(h - 1) * w + x]!).toBeGreaterThan(0.95);
+    }
+    for (let y = 0; y < h; y++) {
+      const left = soft[y * w]!;
+      for (let x = 1; x < w; x++) {
+        expect(soft[y * w + x]!).toBeCloseTo(left, 5);
+      }
+    }
+  });
+
+  it("linear angle normalisation: at 45 degrees field still reaches near-0 and near-1", () => {
+    const w = 48;
+    const h = 48;
+    const src = solid(w, h, 0, 0, 0);
+    // Probe extremes with narrow hard bands at each end of the field range.
+    // Without the |cos|+|sin| denom, a diagonal ramp never reaches both ends.
+    const near0 = computeCoverage(
+      src,
+      baseOpts({
+        source: "linear",
+        angle: 45,
+        low: 0,
+        high: 0.05,
+        softness: 0,
+      }),
+    );
+    const near1 = computeCoverage(
+      src,
+      baseOpts({
+        source: "linear",
+        angle: 45,
+        low: 0.95,
+        high: 1,
+        softness: 0,
+      }),
+    );
+    let hit0 = false;
+    let hit1 = false;
+    for (let i = 0; i < near0.length; i++) {
+      if (near0[i]! === 1) hit0 = true;
+      if (near1[i]! === 1) hit1 = true;
+    }
+    expect(hit0).toBe(true);
+    expect(hit1).toBe(true);
+  });
+
+  it("radial: symmetric about centre, increases outward; centre < corner", () => {
+    const w = 33;
+    const h = 33;
+    const src = solid(w, h, 64, 64, 64);
+    // Recover continuous field via soft map: field = 1 - c.
+    const soft = computeCoverage(
+      src,
+      baseOpts({
+        source: "radial",
+        centerX: 0.5,
+        centerY: 0.5,
+        low: 0,
+        high: 0,
+        softness: 1,
+      }),
+    );
+    const field = (i: number) => 1 - soft[i]!;
+    const cx = (w - 1) >> 1;
+    const cy = (h - 1) >> 1;
+    const centre = field(cy * w + cx);
+    const corner = field(0);
+    expect(centre).toBeLessThan(corner);
+    expect(centre).toBeLessThan(0.05);
+    // Symmetry about centre: value at (cx+dx, cy+dy) ≈ (cx-dx, cy-dy).
+    for (let dy = 0; dy <= cy; dy++) {
+      for (let dx = 0; dx <= cx; dx++) {
+        const a = field((cy + dy) * w + (cx + dx));
+        const b = field((cy - dy) * w + (cx - dx));
+        expect(a).toBeCloseTo(b, 5);
+      }
+    }
+    // Increases with distance from centre along a ray.
+    const midEdge = field(cy * w + (w - 1));
+    expect(centre).toBeLessThan(midEdge);
+    expect(midEdge).toBeLessThanOrEqual(corner + 1e-5);
+  });
+
+  it("radial centre offset: moving centerX shifts where the minimum falls", () => {
+    const w = 41;
+    const h = 21;
+    const src = solid(w, h, 10, 20, 30);
+    // Soft map so coverage encodes the field (field = 1 - c).
+    const left = computeCoverage(
+      src,
+      baseOpts({
+        source: "radial",
+        centerX: 0.25,
+        centerY: 0.5,
+        low: 0,
+        high: 0,
+        softness: 1,
+      }),
+    );
+    const right = computeCoverage(
+      src,
+      baseOpts({
+        source: "radial",
+        centerX: 0.75,
+        centerY: 0.5,
+        low: 0,
+        high: 0,
+        softness: 1,
+      }),
+    );
+    // Find column of minimum field on the middle row for each.
+    const midY = (h - 1) >> 1;
+    const minCol = (cov: Float32Array) => {
+      let bestX = 0;
+      let bestV = Infinity;
+      for (let x = 0; x < w; x++) {
+        const v = 1 - cov[midY * w + x]!;
+        if (v < bestV) {
+          bestV = v;
+          bestX = x;
+        }
+      }
+      return bestX;
+    };
+    const leftMin = minCol(left);
+    const rightMin = minCol(right);
+    expect(leftMin).toBeLessThan(w / 2);
+    expect(rightMin).toBeGreaterThan(w / 2);
+    expect(rightMin).toBeGreaterThan(leftMin);
+  });
+
+  it("positional sources ignore pixel content: same geometry, different pixels → identical coverage", () => {
+    const w = 20;
+    const h = 12;
+    const a = solid(w, h, 0, 0, 0);
+    const b = pixels(w, h, (x, y) => {
+      const v = ((x * 41 + y * 17) * 9) % 256;
+      return [v, 255 - v, (v * 3) % 256];
+    });
+    for (const source of ["linear", "radial"] as const) {
+      const opts = baseOpts({
+        source,
+        angle: 30,
+        centerX: 0.3,
+        centerY: 0.7,
+        low: 0.2,
+        high: 0.8,
+        softness: 0.1,
+      });
+      const ca = computeCoverage(a, opts);
+      const cb = computeCoverage(b, opts);
+      expect(Array.from(ca)).toEqual(Array.from(cb));
+    }
+  });
+
+  // Acceptance test for threshold units: sRGB mid-grey is ~0.5 in picker units
+  // but ~0.216 in linear light. space: "srgb" lets designers aim with the former.
+  it("sRGB space, luminance source: band around 0.5 covers sRGB 128; linear space does not", () => {
+    const src = solid(8, 8, 128, 128, 128);
+    const band = { low: 0.45, high: 0.55, softness: 0 as const };
+    const srgbCov = computeCoverage(
+      src,
+      baseOpts({ source: "luminance", space: "srgb", ...band }),
+    );
+    const linearCov = computeCoverage(
+      src,
+      baseOpts({ source: "luminance", space: "linear", ...band }),
+    );
+    for (let i = 0; i < srgbCov.length; i++) expect(srgbCov[i]).toBe(1);
+    for (let i = 0; i < linearCov.length; i++) expect(linearCov[i]).toBe(0);
+  });
+
+  it("sRGB space is ignored for non-luminance sources (saturation)", () => {
+    const src = pixels(8, 8, (x, y) => {
+      const v = ((x + y * 5) * 19) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256];
+    });
+    const common = {
+      source: "saturation" as const,
+      low: 0.2,
+      high: 0.9,
+      softness: 0.05,
+    };
+    const a = computeCoverage(src, baseOpts({ ...common, space: "srgb" }));
+    const b = computeCoverage(src, baseOpts({ ...common, space: "linear" }));
+    expect(Array.from(a)).toEqual(Array.from(b));
+  });
+
+  it("linear space remains the default behaviour for existing band mapping", () => {
+    // mid-gray ~0.216 linear luminance; white ~1; black 0
+    const src = pixels(3, 1, (x) => {
+      if (x === 0) return [0, 0, 0];
+      if (x === 1) return [128, 128, 128];
+      return [255, 255, 255];
+    });
+    const midY = relativeLuminance(128, 128, 128);
+    const cov = computeCoverage(
+      src,
+      baseOpts({
+        space: "linear",
+        low: midY - 0.05,
+        high: midY + 0.05,
+        softness: 0,
+      }),
+    );
+    expect(cov[0]).toBe(0);
+    expect(cov[1]).toBe(1);
+    expect(cov[2]).toBe(0);
   });
 });
 

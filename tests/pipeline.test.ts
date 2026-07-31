@@ -141,11 +141,14 @@ describe("applyInkmask", () => {
    * Uniform sRGB 128 gray has linear luminance ≈ 0.2159, but raw sRGB ≈ 0.502.
    * The band [0.18, 0.25] brackets the linear value and excludes the sRGB one,
    * so an implementation thresholding in sRGB would return all zeros here.
+   *
+   * The linear guarantee is what this test pins. space: "linear" is passed
+   * explicitly so the default unit changing to sRGB does not weaken it.
    */
   it("Correctness requirement 3: luminance is computed in linear space", () => {
     const src = solid(8, 8, 128, 128, 128);
     const { coverage } = applyInkmask(src, {
-      mask: { low: 0.18, high: 0.25, softness: 0 },
+      mask: { low: 0.18, high: 0.25, softness: 0, space: "linear" },
     });
     for (let i = 0; i < coverage.length; i++) {
       expect(coverage[i]).toBe(1);
@@ -515,5 +518,122 @@ describe("applyInkmask", () => {
 
     expect(t.ungatedOk).toBe(true);
     expect(o.ungatedOk).toBe(true);
+  });
+
+  /**
+   * Default thresholds are sRGB units and legible as colour-picker values.
+   * sRGB 96 is well inside the darker 45%; sRGB 220 is not. Under the old
+   * linear default (high ≈ 0.15) these thresholds would have read completely
+   * differently.
+   */
+  it("default is sRGB and it is legible", () => {
+    const dark = solid(16, 16, 96, 96, 96);
+    const light = solid(16, 16, 220, 220, 220);
+
+    const darkGate = computeGate(dark);
+    const lightGate = computeGate(light);
+
+    let darkOn = 0;
+    let lightOn = 0;
+    for (let i = 0; i < darkGate.gate.length; i++) {
+      if (darkGate.gate[i] === 1) darkOn++;
+      if (lightGate.gate[i] === 1) lightOn++;
+    }
+
+    // Darker 45% of the image: sRGB 96 is substantially gated.
+    expect(darkOn).toBeGreaterThan(darkGate.gate.length * 0.5);
+    // sRGB 220 sits above the default high band; little or no gate.
+    expect(lightOn).toBeLessThan(lightGate.gate.length * 0.1);
+  });
+
+  /**
+   * space: "linear" still works end to end — the same band in linear units
+   * selects the pixels the linear luminance says it should.
+   */
+  it('space: "linear" still works end to end', () => {
+    // sRGB 128 → linear ≈ 0.216; band [0.18, 0.25] selects it in linear units.
+    const mid = solid(8, 8, 128, 128, 128);
+    // sRGB 64 → linear ≈ 0.051; outside that band.
+    const darker = solid(8, 8, 64, 64, 64);
+
+    const midCov = computeGate(mid, {
+      mask: { low: 0.18, high: 0.25, softness: 0, space: "linear" },
+    }).coverage;
+    const darkCov = computeGate(darker, {
+      mask: { low: 0.18, high: 0.25, softness: 0, space: "linear" },
+    }).coverage;
+
+    for (let i = 0; i < midCov.length; i++) {
+      expect(midCov[i]).toBe(1);
+      expect(darkCov[i]).toBe(0);
+    }
+  });
+
+  /**
+   * A positional mask needs no image content. linear and radial sources
+   * evaluate the band from pixel position, so a spatial dissolve needs no
+   * external gradient image.
+   */
+  it("positional mask needs no image content", () => {
+    const src = solid(32, 32, 128, 128, 128);
+    const band = { low: 0, high: 0.5, softness: 0.1 };
+
+    const linear = computeGate(src, {
+      mask: { source: "linear", ...band },
+    });
+    const radial = computeGate(src, {
+      mask: { source: "radial", ...band },
+    });
+
+    let linearOn = 0;
+    let radialOn = 0;
+    for (let i = 0; i < linear.gate.length; i++) {
+      if (linear.gate[i] === 1) linearOn++;
+      if (radial.gate[i] === 1) radialOn++;
+    }
+
+    // Non-empty and not full.
+    expect(linearOn).toBeGreaterThan(0);
+    expect(linearOn).toBeLessThan(linear.gate.length);
+    expect(radialOn).toBeGreaterThan(0);
+    expect(radialOn).toBeLessThan(radial.gate.length);
+
+    // linear and radial produce different gates at the same band.
+    expect(arraysEqual(linear.gate, radial.gate)).toBe(false);
+  });
+
+  /**
+   * Halftone polarity reaches the pipeline. Polarity is an effect concern and
+   * must not touch the mask: coverage is byte-identical; pixels differ.
+   */
+  it("halftone polarity reaches the pipeline", () => {
+    const src = pixels(24, 24, (x, y) => {
+      const v = ((x * 11 + y * 19) * 3) % 256;
+      return [v, (v * 2) % 256, (v * 3) % 256];
+    });
+    const mask: Partial<MaskOptions> = {
+      source: "luminance",
+      low: 0,
+      high: 0.5,
+      softness: 0.1,
+      invert: false,
+      dither: "bayer8",
+    };
+
+    const positive = applyInkmask(src, {
+      mask,
+      effect: { kind: "halftone", polarity: "positive" },
+      foreground: "#000000",
+      background: "#ffffff",
+    });
+    const negative = applyInkmask(src, {
+      mask,
+      effect: { kind: "halftone", polarity: "negative" },
+      foreground: "#000000",
+      background: "#ffffff",
+    });
+
+    expect(arraysEqual(positive.coverage, negative.coverage)).toBe(true);
+    expect(arraysEqual(positive.pixels.data, negative.pixels.data)).toBe(false);
   });
 });

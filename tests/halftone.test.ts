@@ -23,6 +23,7 @@ function opts(overrides: Partial<HalftoneEffect> = {}): HalftoneEffect {
     angle: 45,
     shape: "circle",
     color: "mono",
+    polarity: "positive",
     ...overrides,
   };
 }
@@ -230,6 +231,102 @@ describe("halftoneEffect transparent paper contract", () => {
     const src = solid(8, 8, 50, 100, 150, 200);
     const snapshot = new Uint8ClampedArray(src.data);
     halftoneEffect(src, opts(), FG, null);
+    expect(src.data).toEqual(snapshot);
+  });
+});
+
+describe("halftoneEffect polarity", () => {
+  it("negative inverts dot growth vs positive on uniform bright and dark", () => {
+    const bright = solid(24, 24, 220, 220, 220);
+    const dark = solid(24, 24, 40, 40, 40);
+    const settings = opts({ cell: 6 });
+    const brightPos = countInk(
+      halftoneEffect(bright, { ...settings, polarity: "positive" }, FG, BG),
+      FG,
+    );
+    const brightNeg = countInk(
+      halftoneEffect(bright, { ...settings, polarity: "negative" }, FG, BG),
+      FG,
+    );
+    const darkPos = countInk(
+      halftoneEffect(dark, { ...settings, polarity: "positive" }, FG, BG),
+      FG,
+    );
+    const darkNeg = countInk(
+      halftoneEffect(dark, { ...settings, polarity: "negative" }, FG, BG),
+      FG,
+    );
+    // On bright input, negative (dots grow with L) yields strictly more ink than positive.
+    expect(brightNeg).toBeGreaterThan(brightPos);
+    // On dark input, negative yields strictly fewer ink pixels than positive.
+    expect(darkNeg).toBeLessThan(darkPos);
+  });
+
+  it("negative extremes: all-black is transparent; all-white is entirely ink (mono, bg null)", () => {
+    // Mirror of the positive extremes test: under negative polarity, L=0 → no extent, L=1 → full.
+    const black = solid(8, 8, 0, 0, 0);
+    const white = solid(8, 8, 255, 255, 255);
+    const blackOut = halftoneEffect(black, opts({ polarity: "negative" }), FG, null);
+    const whiteOut = halftoneEffect(white, opts({ polarity: "negative" }), FG, null);
+    expect(countAlpha255(blackOut)).toBe(0);
+    for (let i = 3; i < blackOut.data.length; i += 4) {
+      expect(blackOut.data[i]).toBe(0);
+    }
+    expect(countAlpha255(whiteOut)).toBe(white.width * white.height);
+  });
+
+  it("polarity changes the bytes on the same input and settings", () => {
+    const src = solid(16, 16, 128, 128, 128);
+    const pos = halftoneEffect(src, opts({ polarity: "positive" }), FG, BG);
+    const neg = halftoneEffect(src, opts({ polarity: "negative" }), FG, BG);
+    expect(pos.data).not.toEqual(neg.data);
+  });
+
+  it("cell tone is averaged, not point-sampled", () => {
+    // Vertical black/white stripes with period much finer than the cell size.
+    // Averaging yields mid-gray tone → ink coverage between solid white (no ink) and
+    // solid black (full ink). A centre-sampling implementation collapses to one
+    // extreme or the other depending on where the cell centre lands — that is
+    // exactly what this test distinguishes.
+    const w = 36;
+    const h = 36;
+    // cell >> stripe period; non-power-of-two cell so the 4×4 sample grid hits both colours
+    const cell = 12;
+    const stripePeriod = 2;
+    const stripes: Pixels = { data: new Uint8ClampedArray(w * h * 4), width: w, height: h };
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        // Alternate columns black/white (period 2 << cell)
+        const v = x % stripePeriod === 0 ? 0 : 255;
+        stripes.data[i] = v;
+        stripes.data[i + 1] = v;
+        stripes.data[i + 2] = v;
+        stripes.data[i + 3] = 255;
+      }
+    }
+    const settings = opts({ cell, angle: 0, polarity: "positive" });
+    const stripeOut = halftoneEffect(stripes, settings, FG, null);
+    const whiteOut = halftoneEffect(solid(w, h, 255, 255, 255), settings, FG, null);
+    const blackOut = halftoneEffect(solid(w, h, 0, 0, 0), settings, FG, null);
+    const stripeInk = countAlpha255(stripeOut);
+    const whiteInk = countAlpha255(whiteOut);
+    const blackInk = countAlpha255(blackOut);
+    expect(stripeInk).toBeGreaterThan(whiteInk);
+    expect(stripeInk).toBeLessThan(blackInk);
+  });
+
+  it("determinism on the negative polarity path", () => {
+    const src = solid(12, 12, 100, 120, 140);
+    const a = halftoneEffect(src, opts({ polarity: "negative" }), FG, BG);
+    const b = halftoneEffect(src, opts({ polarity: "negative" }), FG, BG);
+    expect(a.data).toEqual(b.data);
+  });
+
+  it("does not mutate the input Pixels.data under negative polarity", () => {
+    const src = solid(8, 8, 50, 100, 150, 200);
+    const snapshot = new Uint8ClampedArray(src.data);
+    halftoneEffect(src, opts({ polarity: "negative" }), FG, BG);
     expect(src.data).toEqual(snapshot);
   });
 });

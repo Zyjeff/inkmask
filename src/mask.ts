@@ -1,5 +1,5 @@
 import type { MaskOptions, MatrixKind, Pixels } from "./types.js";
-import { luminanceField, saturationField } from "./color.js";
+import { linearToSrgb, luminanceField, saturationField } from "./color.js";
 import { thresholdAt } from "./matrix.js";
 
 /**
@@ -16,11 +16,26 @@ export function computeCoverage(src: Pixels, opts: MaskOptions): Float32Array {
   const high = opts.high;
   const inv = opts.invert;
 
+  // When space is "srgb" for luminance/external, remap the linear field to
+  // sRGB units so the band (low/high/softness) can be aimed with colour-picker
+  // values. Luminance is still COMPUTED in linear light; only the comparison
+  // units change. Other sources leave the field untouched.
+  const remapSrgb =
+    opts.space === "srgb" &&
+    (opts.source === "luminance" || opts.source === "external");
+
   // softness is a ramp width in VALUE units (source-field 0-1), not pixels.
   // Spatial feathering is intentionally absent; the ordered-dither gate
   // produces the dotted falloff after this pure per-pixel band map.
+  //
+  // Positional mask sources ("linear", "radial") are NOT spatial feathering.
+  // The no-blur rule forbids smoothing a mask field across neighbouring
+  // pixels; a positional ramp is an input to the mask, still evaluated per
+  // pixel with no neighbourhood access, and its falloff is still resolved
+  // by the ordered-dither gate.
   for (let i = 0; i < n; i++) {
-    const v = field[i]!;
+    let v = field[i]!;
+    if (remapSrgb) v = linearToSrgb(v);
     let c: number;
     if (s <= 0) {
       c = v >= low && v <= high ? 1 : 0;
@@ -133,6 +148,10 @@ function sourceField(src: Pixels, opts: MaskOptions): Float32Array {
       return saturationField(src);
     case "gradient":
       return sobelMagnitude(luminanceField(src), src.width, src.height);
+    case "linear":
+      return linearField(src.width, src.height, opts.angle);
+    case "radial":
+      return radialField(src.width, src.height, opts.centerX, opts.centerY);
     case "external": {
       const ext = opts.external;
       if (!ext) {
@@ -146,6 +165,83 @@ function sourceField(src: Pixels, opts: MaskOptions): Float32Array {
       return luminanceField(ext);
     }
   }
+}
+
+/**
+ * Positional linear ramp. Pure function of (x, y); no neighbourhood access.
+ * Angle 0 runs left to right. The |cos|+|sin| denominator normalises the
+ * projection so t spans exactly 0..1 at any angle.
+ */
+function linearField(
+  width: number,
+  height: number,
+  angleDeg: number,
+): Float32Array {
+  const out = new Float32Array(width * height);
+  const a = (angleDeg * Math.PI) / 180;
+  const cosA = Math.cos(a);
+  const sinA = Math.sin(a);
+  const denom = Math.abs(cosA) + Math.abs(sinA);
+  const invW = width <= 1 ? 0 : 1 / (width - 1);
+  const invH = height <= 1 ? 0 : 1 / (height - 1);
+
+  for (let y = 0; y < height; y++) {
+    const ny = y * invH - 0.5;
+    const row = y * width;
+    for (let x = 0; x < width; x++) {
+      const nx = x * invW - 0.5;
+      // denom is zero only if cos and sin are both zero, which never happens.
+      const t = 0.5 + (nx * cosA + ny * sinA) / denom;
+      out[row + x] = t;
+    }
+  }
+  return out;
+}
+
+/**
+ * Positional radial ramp. Distance from centre in normalised image coords,
+ * divided by the farthest corner distance, clamped to 0-1. Pure per-pixel.
+ */
+function radialField(
+  width: number,
+  height: number,
+  centerX: number,
+  centerY: number,
+): Float32Array {
+  const out = new Float32Array(width * height);
+  // Max distance from centre to any of the four corners (in 0-1 image coords).
+  const corners: [number, number][] = [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1],
+  ];
+  let maxDist = 0;
+  for (const [cx, cy] of corners) {
+    const dx = cx - centerX;
+    const dy = cy - centerY;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d > maxDist) maxDist = d;
+  }
+  // If maxDist is 0 (degenerate 0-size / centre at a single point only), avoid /0.
+  const invMax = maxDist > 0 ? 1 / maxDist : 0;
+  const invW = width <= 1 ? 0 : 1 / (width - 1);
+  const invH = height <= 1 ? 0 : 1 / (height - 1);
+
+  for (let y = 0; y < height; y++) {
+    const ny = height <= 1 ? centerY : y * invH;
+    const row = y * width;
+    for (let x = 0; x < width; x++) {
+      const nx = width <= 1 ? centerX : x * invW;
+      const dx = nx - centerX;
+      const dy = ny - centerY;
+      let t = Math.sqrt(dx * dx + dy * dy) * invMax;
+      if (t < 0) t = 0;
+      else if (t > 1) t = 1;
+      out[row + x] = t;
+    }
+  }
+  return out;
 }
 
 /** Sobel magnitude of a scalar field. Fixed 0-1 normalization; edge coords clamp. */
