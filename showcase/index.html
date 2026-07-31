@@ -836,7 +836,7 @@
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              An eclipsed disc: a lit crescent against a near-black field. The default treatment uses negative polarity, so dots grow as tone brightens and the screen opens only along the crescent — the inverse of a conventional halftone. The alternates change the ink colour, swap dots for glyphs, or drop the mask and screen the whole frame. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the crescent band the inverse screen uses, so the photograph's colour survives between the dots.
+              An eclipsed disc: a lit crescent against a near-black field. The default treatment uses negative polarity, so dots grow as tone brightens and the screen opens only along the crescent — the inverse of a conventional halftone. The alternates change the ink colour, swap dots for glyphs, or drop the mask and screen the whole frame. MASKED PRINT keeps the full-frame ink and dot texture but confines it to a narrow highlight band, so the photograph's colour survives between the dots. That band starts high on purpose: under positive polarity a dark-ink dot grows as tone falls, filling its cell entirely once the tone is low enough, so a band reaching down into the midtones would blacken them rather than dissolve into them.
             </p>
             <pre class="plate-options" id="opts-09"></pre>
           </div>
@@ -864,7 +864,7 @@
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A sphere lit from one side. The default is a full band: the whole frame is screened in dark ink with no mask cutout — the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect. The alternates reintroduce the gate, confining dots, dither, or glyphs to the lit side. MASKED PRINT keeps the full-screen ink and dot texture but confines it to the same lit band the inverse screen uses, so the source colour survives between the dots.
+              A sphere lit from one side. The default is a full band: the whole frame is screened in dark ink with no mask cutout — the ordinary print-shop halftone the library still produces on request; the mask is what is optional, not the effect. The alternates reintroduce the gate, confining dots, dither, or glyphs to the lit side. MASKED PRINT keeps the full-screen ink and dot texture inside a narrow band on the lit side, so the source colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-10"></pre>
           </div>
@@ -892,7 +892,7 @@
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A chasm interior: a red mass beside a brighter cyan field. The default multiplies blue-noise dither in dark ink into the red mass and the deeper tones around it, excluding the brightest cyan so the field the figure stands in comes through untouched. The alternates move the band to the highlights, resolve the same band as a halftone, or cover the full frame. MASKED PRINT keeps the full-frame dither and dark ink but confines it to the bright cyan band the inverse screen uses, so the source colour survives between the marks.
+              A chasm interior: a red mass beside a brighter cyan field. The default multiplies blue-noise dither in dark ink into the red mass and the deeper tones around it, excluding the brightest cyan so the field the figure stands in comes through untouched. The alternates move the band to the highlights, resolve the same band as a halftone, or cover the full frame. MASKED PRINT keeps the full-frame dither and dark ink inside a narrow highlight band, so the source colour survives between the marks.
             </p>
             <pre class="plate-options" id="opts-11"></pre>
           </div>
@@ -920,7 +920,7 @@
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A heather field, masked by position rather than colour in the default treatment: the mask field is the pixel's vertical position, so the screen fades across the frame regardless of what the photograph contains. The alternates swap the ramp for a radial falloff, gate on luminance instead of position, or drop the mask entirely. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the highlight band the inverse screen uses, so the field's colour survives between the dots.
+              A heather field, masked by position rather than colour in the default treatment: the mask field is the pixel's vertical position, so the screen fades across the frame regardless of what the photograph contains. The alternates swap the ramp for a radial falloff, gate on luminance instead of position, or drop the mask entirely. MASKED PRINT keeps the full-frame ink and dot texture inside a narrow highlight band, so the field's colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-12"></pre>
           </div>
@@ -948,7 +948,7 @@
           </div>
           <div class="plate-meta">
             <p class="plate-caption">
-              A library interior. The default sets ASCII at an 8×12 cell over the midtones and highlights; the mask resolves to the character cell, so no glyph is ever half-masked at the boundary. The alternates trade glyphs for a negative halftone in the highlights, blue-noise dither confined to the shadows, or an unmasked full-frame screen. MASKED PRINT keeps the full-frame ink and dot texture but confines it to the same bright band the inverse screen uses, so the interior's colour survives between the dots.
+              A library interior. The default sets ASCII at an 8×12 cell over the midtones and highlights; the mask resolves to the character cell, so no glyph is ever half-masked at the boundary. The alternates trade glyphs for a negative halftone in the highlights, blue-noise dither confined to the shadows, or an unmasked full-frame screen. MASKED PRINT keeps the full-frame ink and dot texture inside a narrow highlight band, so the interior's colour survives between the dots.
             </p>
             <pre class="plate-options" id="opts-13"></pre>
           </div>
@@ -2252,7 +2252,7 @@ const PHOTO_GALLERY = [
         label: "MASKED PRINT",
         options: {
           effect: { kind: "halftone", cell: 6, angle: 45 },
-          mask: { low: 0.35, high: 1, softness: 0.25 },
+          mask: { low: 0.55, high: 1, softness: 0.10 },
           foreground: "#0A0A0C",
         },
         aria: "Plate 09 Eclipse: full-frame dark ink confined to the lit crescent, the photograph showing between the dots",
@@ -2284,7 +2284,7 @@ const PHOTO_GALLERY = [
         label: "MASKED PRINT",
         options: {
           effect: { kind: "halftone", cell: 6, angle: 15 },
-          mask: { low: 0.50, high: 1, softness: 0.25 },
+          mask: { low: 0.52, high: 1, softness: 0.12 },
           foreground: "#141210",
         },
         aria: "Plate 10 Sphere: full-screen dark ink confined to the lit side of the sphere, the photograph showing between the dots",
@@ -2375,7 +2375,7 @@ const PHOTO_GALLERY = [
         label: "MASKED PRINT",
         options: {
           effect: { kind: "dither", matrix: "blueNoise", scale: 2 },
-          mask: { low: 0.80, high: 1, softness: 0.14 },
+          mask: { low: 0.80, high: 1, softness: 0.10 },
           foreground: "#0A2540",
           blend: "multiply",
         },
@@ -2436,7 +2436,7 @@ const PHOTO_GALLERY = [
         label: "MASKED PRINT",
         options: {
           effect: { kind: "halftone", cell: 6, angle: 15 },
-          mask: { low: 0.65, high: 1, softness: 0.20 },
+          mask: { low: 0.68, high: 1, softness: 0.12 },
           foreground: "#24121C",
         },
         aria: "Plate 12 Heather: full-frame dark ink confined to the photograph's highlights, colour kept between the dots",
@@ -2498,7 +2498,7 @@ const PHOTO_GALLERY = [
         label: "MASKED PRINT",
         options: {
           effect: { kind: "halftone", cell: 6, angle: 15 },
-          mask: { low: 0.50, high: 1, softness: 0.20 },
+          mask: { low: 0.55, high: 1, softness: 0.10 },
           foreground: "#0A1018",
         },
         aria: "Plate 13 Library: full-frame dark ink confined to the interior's brightest passages, the photograph showing between the dots",
